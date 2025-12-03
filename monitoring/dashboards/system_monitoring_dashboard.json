@@ -1,0 +1,180 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "System Monitoring Dashboard",
+    "tags": ["system", "infrastructure", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "system_cpu_percent",
+            "legendFormat": "CPU Usage %",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "yAxes": [
+          {
+            "format": "percent",
+            "label": "CPU %"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "system_memory_percent",
+            "legendFormat": "Memory Usage %",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "yAxes": [
+          {
+            "format": "percent",
+            "label": "Memory %"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "system_disk_percent",
+            "legendFormat": "Disk Usage %",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "yAxes": [
+          {
+            "format": "percent",
+            "label": "Disk %"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "System Health Status",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "health_status{check=\"system\"}",
+            "legendFormat": "System Health",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "yAxes": [
+          {
+            "format": "short",
+            "label": "Health (0=unhealthy, 0.5=degraded, 1=healthy)"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}} - {{status}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "yAxes": [
+          {
+            "format": "reqps",
+            "label": "Requests/sec"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "HTTP Request Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{method}} {{endpoint}} P95",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "yAxes": [
+          {
+            "format": "s",
+            "label": "Duration (seconds)"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Active HTTP Requests",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "http_active_requests",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "yAxes": [
+          {
+            "format": "short",
+            "label": "Active Requests"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Health Check Status",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "health_status",
+            "legendFormat": "{{check}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "yAxes": [
+          {
+            "format": "short",
+            "label": "Health (0=unhealthy, 0.5=degraded, 1=healthy)"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+    },
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "refresh": "5s",
+    "schemaVersion": 16,
+    "version": 0,
+    "links": [],
+    "gnetId": null
+  }
+}

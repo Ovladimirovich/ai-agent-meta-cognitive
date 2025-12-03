@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  # ================================
+  # Development Frontend Service
+ # ================================
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - ai-agent-network
+
+  # ================================
+  # Development AI Agent API Service
+  # ================================
+  ai-agent:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/home/app
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DEBUG=true
+      - API_RELOAD=true
+      # Базы данных
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ai_agent
+      - POSTGRES_USER=ai_agent
+      - POSTGRES_PASSWORD=ai_agent_password  # Для разработки
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_password  # Для разработки
+      # OpenAI (ключ из env файла или переменной окружения)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # Безопасность (для разработки)
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - JWT_SECRET_KEY=dev-jwt-secret-key-change-in-production
+    volumes:
+      - .:/home/app
+      - ./data:/home/app/data
+      - ./logs:/home/app/logs
+      - ./cache:/home/app/cache
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    networks:
+      - ai-agent-network
+    depends_on:
+      - postgres
+      - redis
+
+  # ================================
+  # Development PostgreSQL Database
+  # ================================
+  postgres:
+    environment:
+      - POSTGRES_DB=ai_agent
+      - POSTGRES_USER=ai_agent
+      - POSTGRES_PASSWORD=ai_agent_password
+    ports:
+      - "5432:5432"  # Доступен для разработки
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ai-agent-network
+
+  # ================================
+  # Development Redis Cache
+  # ================================
+  redis:
+    command: redis-server --appendonly yes
+    environment:
+      - REDIS_PASSWORD=redis_password
+    ports:
+      - "6379:6379"  # Доступен для разработки
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - ai-agent-network
+
+  # ================================
+  # Development Tools
+  # ================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@ai-agent.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    networks:
+      - ai-agent-network
+    profiles:
+      - tools
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - ai-agent-network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  pgadmin_data_dev:
+
+networks:
+  ai-agent-network:
+    name: ai_agent_network
+    driver: bridge
+    # В режиме разработки может быть нужен доступ к хосту
+    external: false

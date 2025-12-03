@@ -1,0 +1,100 @@
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { AgentDashboard } from './AgentDashboard';
+
+// Моки для компонентов, чтобы избежать проблем с зависимостями
+jest.mock('../../features/agent-interaction/AgentChatInterface', () => ({
+  AgentChatInterface: () => <div data-testid="agent-chat-interface">Agent Chat Interface</div>
+}));
+
+jest.mock('../../widgets/MemoryVisualizer/MemoryVisualizer', () => ({
+  default: () => <div data-testid="memory-visualizer">Memory Visualizer</div>
+}));
+
+jest.mock('../../widgets/ReflectionTimeline/ReflectionTimeline', () => ({
+  default: () => <div data-testid="reflection-timeline">Reflection Timeline</div>
+}));
+
+jest.mock('../../widgets/CognitiveHealthMonitor/CognitiveHealthMonitor', () => ({
+  default: () => <div data-testid="cognitive-health-monitor">Cognitive Health Monitor</div>
+}));
+
+// Моки для провайдеров
+jest.mock('../../widgets/AdvancedAnalyticsDashboard/WebSocketProvider', () => ({
+  WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  useWebSocket: () => ({ ws: null, isConnected: true })
+}));
+
+jest.mock('../../widgets/RealtimeDataProvider', () => ({
+  RealtimeDataProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  useRealtimeData: () => ({ 
+    cognitiveData: null, 
+    memoryData: null, 
+    reflectionData: null, 
+    isLoading: false 
+  })
+}));
+
+describe('AgentDashboard Integration', () => {
+  test('renders all main components', async () => {
+    render(<AgentDashboard />);
+    
+    // Проверяем заголовок
+    expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
+    expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
+    
+    // Проверяем наличие всех основных компонентов
+    await waitFor(() => {
+      expect(screen.getByTestId('cognitive-health-monitor')).toBeInTheDocument();
+    });
+    
+    expect(screen.getByTestId('memory-visualizer')).toBeInTheDocument();
+    expect(screen.getByTestId('reflection-timeline')).toBeInTheDocument();
+    expect(screen.getByTestId('agent-chat-interface')).toBeInTheDocument();
+    
+    // Проверяем футер
+    expect(screen.getByText(/© 2025 Meta-Cognitive AI Agent/)).toBeInTheDocument();
+  });
+
+  test('renders header with correct information', () => {
+    render(<AgentDashboard />);
+    
+    expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
+    expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
+    expect(screen.getByText('Backend:')).toBeInTheDocument();
+    expect(screen.getByText('● Online')).toBeInTheDocument();
+  });
+
+  test('renders footer with correct information', () => {
+    render(<AgentDashboard />);
+    
+    expect(screen.getByText(/© 2025 Meta-Cognitive AI Agent/)).toBeInTheDocument();
+    expect(screen.getByText('API Docs')).toBeInTheDocument();
+    expect(screen.getByText('GraphQL')).toBeInTheDocument();
+    expect(screen.getByText('GitHub')).toBeInTheDocument();
+  });
+
+  test('has correct layout structure', () => {
+    render(<AgentDashboard />);
+    
+    // Проверяем, что компоненты находятся внутри сетки
+    const cognitiveHealthMonitor = screen.getByTestId('cognitive-health-monitor');
+    const memoryVisualizer = screen.getByTestId('memory-visualizer');
+    
+    expect(cognitiveHealthMonitor).toBeInTheDocument();
+    expect(memoryVisualizer).toBeInTheDocument();
+  });
+
+  test('connects all components to WebSocket provider', async () => {
+    render(<AgentDashboard />);
+    
+    // Проверяем, что все компоненты были загружены (через тестовые идентификаторы)
+    await waitFor(() => {
+      expect(screen.getByTestId('cognitive-health-monitor')).toBeInTheDocument();
+    });
+    
+    expect(screen.getByTestId('memory-visualizer')).toBeInTheDocument();
+    expect(screen.getByTestId('reflection-timeline')).toBeInTheDocument();
+    expect(screen.getByTestId('agent-chat-interface')).toBeInTheDocument();
+  });
+});

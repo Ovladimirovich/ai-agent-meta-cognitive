@@ -1,0 +1,41 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+ deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Render
+        run: |
+          # Создаем переменные окружения для Render
+          echo "DATABASE_URL=${{ secrets.RENDER_DATABASE_URL }}" > .env
+          echo "REDIS_URL=${{ secrets.RENDER_REDIS_URL }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "GOOGLE_AI_API_KEY=${{ secrets.GOOGLE_AI_API_KEY }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          
+          # Отправляем изменения в Render (если используется git push деплой)
+          # Для Render через Webhook/Deploy Key используем API
+          
+          # Проверяем, что все необходимые секреты заданы
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ] || [ -z "${{ secrets.RENDER_SERVICE_ID }}" ]; then
+            echo "Необходимо настроить RENDER_API_KEY и RENDER_SERVICE_ID в GitHub Secrets"
+            exit 1
+          fi
+          
+          # Вызываем API Render для триггера деплоя
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+            -d '{
+              "branch": "main"
+            }'

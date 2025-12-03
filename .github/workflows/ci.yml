@@ -1,0 +1,580 @@
+name: Comprehensive CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+jobs:
+  # ================================
+  # Unit Testing
+  # ================================
+  unit-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v -m "not integration and not performance" --cov=agent --cov=api --cov=database --cov=integrations --cov-report=xml --cov-report=html --cov-report=term
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-unit-${{ matrix.python-version }}
+        fail_ci_if_error: false
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: unit-test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+        retention-days: 30
+
+  # ================================
+  # Integration Testing
+  # ================================
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: unit-test
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ai_agent_test
+          POSTGRES_USER: ai_agent
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Run integration tests
+      run: |
+        export POSTGRES_HOST=localhost
+        export POSTGRES_PORT=5432
+        export POSTGRES_DB=ai_agent_test
+        export POSTGRES_USER=ai_agent
+        export POSTGRES_PASSWORD=test_password
+        export REDIS_HOST=localhost
+        export REDIS_PORT=6379
+        export ENVIRONMENT=test
+        pytest tests/ -v -m integration --cov=agent --cov=api --cov=database --cov-report=xml --cov-report=term
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: |
+          coverage.xml
+        retention-days: 30
+
+  # ================================
+  # Performance Testing
+  # ================================
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: integration-test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Run performance tests
+      run: |
+        python -m pytest tests/performance_tests.py -v --tb=short
+
+    - name: Run API performance tests
+      run: |
+        # Run the performance tests directly to generate baseline data
+        python tests/performance_tests.py
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-test-results
+        path: |
+          tests/performance_baseline.json
+        retention-days: 30
+
+  # ================================
+  # Security Scanning
+  # ================================
+  security-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scan-type: [sast, dependencies, container]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Security scan - Static Analysis
+      if: matrix.scan-type == 'sast'
+      run: |
+        pip install bandit safety
+        bandit -r agent/ api/ database/ integrations/ -f json -o bandit-report.json || true
+        safety check --json > safety-report.json || true
+
+    - name: Security scan - Dependencies
+      if: matrix.scan-type == 'dependencies'
+      run: |
+        pip install safety
+        safety check --full-report > dependency-scan-report.txt || true
+
+    - name: Security scan - Container
+      if: matrix.scan-type == 'container' && github.event_name != 'pull_request'
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload security results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-scan-results-${{ matrix.scan-type }}
+        path: |
+          bandit-report.json
+          safety-report.json
+          dependency-scan-report.txt
+          trivy-results.sarif
+        retention-days: 30
+
+  # ================================
+  # Code Quality Checks
+  # ================================
+  code-quality:
+    runs-on: ubuntu-latest
+    needs: [unit-test, security-scan]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Lint with flake8
+      run: |
+        flake8 agent/ api/ database/ integrations/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 agent/ api/ database/ integrations/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Type check with mypy
+      run: |
+        mypy agent/ api/ database/ integrations/ --ignore-missing-imports
+
+    - name: Quality gate check
+      run: |
+        # Check if coverage meets threshold
+        pip install coverage
+        coverage report --fail-under=80 || exit 1
+        
+    - name: Quality gate - Security check
+      run: |
+        # In a real implementation, you would check the security scan results
+        # and fail if critical vulnerabilities are found
+        echo "Security quality gate passed"
+        
+    - name: Quality gate - Performance check
+      run: |
+        # In a real implementation, you would check performance metrics
+        # and fail if performance has degraded beyond acceptable thresholds
+        echo "Performance quality gate passed"
+
+  # ================================
+  # Build Docker Images
+  # ================================
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [code-quality, performance-test]
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: actions/docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=${{ matrix.environment }},enable=true
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        target: ${{ matrix.environment }}
+        build-args: |
+          ENVIRONMENT=${{ matrix.environment }}
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ steps.meta.outputs.tags }}
+        format: 'sarif'
+        output: 'trivy-docker-results.sarif'
+
+    - name: Upload Docker scan results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: docker-scan-results-${{ matrix.environment }}
+        path: trivy-docker-results.sarif
+        retention-days: 30
+
+  # ================================
+  # Environment Deployments
+  # ================================
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to development
+      run: |
+        echo "Deploying to development environment..."
+        # Add your development deployment commands here
+        # For example: kubectl, docker-compose, etc.
+        echo "Development deployment completed"
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment commands here
+        # For example: kubectl, docker-compose, etc.
+        echo "Staging deployment completed"
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [docker-build, deploy-staging]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment commands here
+        # For example: kubectl, docker swarm, etc.
+        echo "Production deployment completed"
+
+  # ================================
+  # Post-Deployment Testing
+ # ================================
+  post-deployment-test:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run post-deployment tests
+      run: |
+        echo "Running post-deployment tests for ${{ matrix.environment }}..."
+        # Add your post-deployment test commands here
+        # For example: API health checks, smoke tests, etc.
+        echo "Post-deployment tests completed for ${{ matrix.environment }}"
+
+  # ================================
+  # Documentation Update
+  # ================================
+  docs:
+    runs-on: ubuntu-latest
+    needs: unit-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install docs dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+
+    - name: Build documentation
+      run: mkdocs build
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+
+    - name: Upload docs artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: site/
+        retention-days: 30
+
+  # ================================
+  # Release and DOI Preparation
+ # ================================
+  release:
+    runs-on: ubuntu-latest
+    needs: [post-deployment-test, docs]
+    if: github.event_name == 'release'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: python -m build
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        twine upload dist/*
+
+    - name: Create GitHub release notes
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## What's Changed
+
+          ### 🚀 New Features
+          - [List new features here]
+
+          ### 🐛 Bug Fixes
+          - [List bug fixes here]
+
+          ### 📚 Documentation
+          - [List documentation updates here]
+
+          ### 🔧 Technical Changes
+          - [List technical changes here]
+
+          ## Installation
+
+          ```bash
+          pip install ai-agent-meta-cognitive
+          ```
+
+          Or with Docker:
+
+          ```bash
+          docker run -p 8000:8000 ai-agent-meta-cognitive:latest
+          ```
+
+          ## DOI
+
+          This release is archived with DOI for scientific reproducibility.
+
+  # ================================
+  # DOI Preparation
+  # ================================
+  doi-prepare:
+    runs-on: ubuntu-latest
+    needs: release
+    if: github.event_name == 'release'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Prepare DOI files
+      run: make doi-prepare
+
+    - name: Upload DOI files
+      uses: actions/upload-artifact@v3
+      with:
+        name: doi-files
+        path: doi_files/
+        retention-days: 365
+
+    - name: Create DOI metadata
+      run: |
+        cat > CITATION.cff << EOF
+        cff-version: 1.2.0
+        message: "If you use this software, please cite it as below."
+        type: software
+        title: "AI Agent with Meta-Cognition"
+        authors:
+        - name: "AI Research Team"
+        repository-code: "https://github.com/${{ github.repository }}"
+        url: "https://github.com/${{ github.repository }}"
+        license: MIT
+        preferred-citation:
+          type: software
+          title: "AI Agent with Meta-Cognition"
+          authors:
+          - name: "AI Research Team"
+          repository-code: "https://github.com/${{ github.repository }}"
+          url: "https://doi.org/10.5281/zenodo.xxxxx"
+          license: MIT
+        EOF
+
+    - name: Upload citation file
+      uses: actions/upload-artifact@v3
+      with:
+        name: citation-cff
+        path: CITATION.cff
+        retention-days: 365

@@ -1,0 +1,206 @@
+version: '3.8'
+
+services:
+  # ================================
+  # Frontend Service
+  # ================================
+  frontend:
+    build:
+      context: ./frontend
+      target: runtime
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - ai-agent
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ai-agent-network
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+
+  # ================================
+  # AI Agent API Service
+ # ================================
+  ai-agent:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/home/app
+      - ENVIRONMENT=production
+      # Базы данных
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ai_agent
+      - POSTGRES_USER=ai_agent
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # OpenAI (ключ должен быть передан через secrets или env)
+      - OPENAI_API_KEY_FILE=/run/secrets/openai_api_key
+      # Настройки логирования
+      - LOG_LEVEL=INFO
+      # Безопасность
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - JWT_SECRET_KEY_FILE=/run/secrets/jwt_secret_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    secrets:
+      - postgres_password
+      - openai_api_key
+      - secret_key
+      - jwt_secret_key
+    volumes:
+      - ai_agent_data:/home/app/data
+      - ai_agent_logs:/home/app/logs
+      - ai_agent_cache:/home/app/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ai-agent-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # ================================
+  # PostgreSQL Database
+  # ================================
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=ai_agent
+      - POSTGRES_USER=ai_agent
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_agent -d ai_agent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-agent-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ================================
+  # Redis Cache
+  # ================================
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"
+    environment:
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
+    secrets:
+      - redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - ai-agent-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # ================================
+  # Vector Database (ChromaDB)
+  # ================================
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    restart: unless-stopped
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    networks:
+      - ai-agent-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  ai_agent_data:
+    name: ai_agent_data
+  ai_agent_logs:
+    name: ai_agent_logs
+  ai_agent_cache:
+    name: ai_agent_cache
+  postgres_data:
+    name: ai_agent_postgres_data
+  redis_data:
+    name: ai_agent_redis_data
+  chromadb_data:
+    name: ai_agent_chromadb_data
+
+networks:
+  ai-agent-network:
+    name: ai_agent_network
+    driver: bridge
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  openai_api_key:
+    file: ./secrets/openai_api_key.txt
+  secret_key:
+    file: ./secrets/secret_key.txt
+  jwt_secret_key:
+    file: ./secrets/jwt_secret_key.txt
+  redis_password:
+    file: ./secrets/redis_password.txt

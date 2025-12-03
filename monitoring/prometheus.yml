@@ -1,0 +1,42 @@
+global:
+  evaluation_interval: 15s
+  external_labels:
+    monitor: ai-agent-monitor
+  scrape_interval: 15s
+rule_files:
+- alert_rules.yml
+scrape_configs:
+- job_name: prometheus
+  static_configs:
+  - targets:
+    - localhost:9090
+- job_name: ai-agent
+  metrics_path: /metrics
+  relabel_configs:
+  - source_labels:
+    - __address__
+    target_label: __tmp_prometheus_agent_address
+  scrape_interval: 5s
+  scrape_timeout: 10s
+  static_configs:
+  - labels:
+      service: ai-agent
+      team: ai
+    targets:
+    - localhost:8000
+- job_name: node-exporter
+  scrape_interval: 5s
+  static_configs:
+  - labels:
+      service: node-exporter
+      team: infrastructure
+    targets:
+    - node-exporter:9100
+- job_name: jaeger
+  scrape_interval: 10s
+  static_configs:
+  - labels:
+      service: jaeger
+      team: tracing
+    targets:
+    - jaeger:14269

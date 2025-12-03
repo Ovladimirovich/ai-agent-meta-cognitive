@@ -1,0 +1,220 @@
+name: Deployment Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: "Target environment (development, staging, production)"
+      deploy_strategy:
+        required: false
+        type: string
+        default: "rolling"
+        description: "Deployment strategy (rolling, blue-green, canary)"
+    secrets:
+      K8S_CONFIG_DATA:
+        required: true
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      deploy_strategy:
+        description: 'Deployment strategy'
+        required: false
+        default: 'rolling'
+        type: choice
+        options:
+          - rolling
+          - blue-green
+          - canary
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.validate.outputs.environment }}
+      deploy_strategy: ${{ steps.validate.outputs.deploy_strategy }}
+    steps:
+      - name: Validate inputs
+        id: validate
+        run: |
+          ENV=${{ inputs.environment || github.event.inputs.environment }}
+          STRATEGY=${{ inputs.deploy_strategy || github.event.inputs.deploy_strategy || 'rolling' }}
+          
+          if [[ "$ENV" != "development" && "$ENV" != "staging" && "$ENV" != "production" ]]; then
+            echo "Invalid environment: $ENV"
+            exit 1
+          fi
+          
+          if [[ "$STRATEGY" != "rolling" && "$STRATEGY" != "blue-green" && "$STRATEGY" != "canary" ]]; then
+            echo "Invalid deployment strategy: $STRATEGY"
+            exit 1
+          fi
+          
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "deploy_strategy=$STRATEGY" >> $GITHUB_OUTPUT
+          
+          echo "Validated environment: $ENV with strategy: $STRATEGY"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: ${{ needs.validate.outputs.environment }}
+    concurrency: 
+      group: deploy-${{ needs.validate.outputs.environment }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=raw,value=${{ needs.validate.outputs.environment }}
+            type=sha,prefix=${{ needs.validate.outputs.environment }}-
+
+      - name: Set up Kubernetes
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.K8S_CONFIG_DATA }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy using strategy
+        run: |
+          ENV=${{ needs.validate.outputs.environment }}
+          STRATEGY=${{ needs.validate.outputs.deploy_strategy }}
+          
+          echo "Deploying to $ENV using $STRATEGY strategy"
+          
+          case $STRATEGY in
+            "rolling")
+              echo "Performing rolling deployment"
+              # For rolling deployment, we just update the image in the deployment
+              kubectl set image deployment/ai-agent-deployment ai-agent=${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ needs.validate.outputs.environment }} -n $ENV
+              kubectl rollout status deployment/ai-agent-deployment -n $ENV --timeout=10m
+              ;;
+            "blue-green")
+              echo "Performing blue-green deployment"
+              # For blue-green, we deploy to a new set of resources and switch traffic
+              # This would involve deploying to 'green' if 'blue' is active, and vice versa
+              # Implementation would depend on your specific setup
+              kubectl set image deployment/ai-agent-deployment-${ENV}-green ai-agent=${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ needs.validate.outputs.environment }} -n $ENV
+              kubectl rollout status deployment/ai-agent-deployment-${ENV}-green -n $ENV --timeout=10m
+              
+              # Switch service to point to green deployment
+              kubectl patch service ai-agent-service -n $ENV -p '{"spec":{"selector":{"version":"green"}}}'
+              ;;
+            "canary")
+              echo "Performing canary deployment"
+              # For canary, we deploy a small subset first and gradually increase
+              kubectl set image deployment/ai-agent-canary-deployment ai-agent=${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ needs.validate.outputs.environment }} -n $ENV
+              kubectl rollout status deployment/ai-agent-canary-deployment -n $ENV --timeout=10m
+              
+              # Gradually scale up the canary deployment
+              kubectl scale deployment ai-agent-canary-deployment -n $ENV --replicas=2
+              sleep 60
+              kubectl scale deployment ai-agent-canary-deployment -n $ENV --replicas=5
+              ;;
+          esac
+
+      - name: Run post-deployment tests
+        run: |
+          ENV=${{ needs.validate.outputs.environment }}
+          echo "Running post-deployment tests for $ENV environment"
+          
+          # Wait for deployment to be ready
+          sleep 30
+          
+          # Check if the service is responding
+          kubectl get pods -n $ENV
+          kubectl get services -n $ENV
+          
+          # Run health check
+          POD_NAME=$(kubectl get pods -n $ENV -l app=ai-agent -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec $POD_NAME -n $ENV -- curl -f http://localhost:8000/health
+
+  rollback:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: failure()
+    environment: ${{ needs.validate.outputs.environment }}
+
+    steps:
+      - name: Set up Kubernetes
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.K8S_CONFIG_DATA }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Rollback deployment
+        run: |
+          ENV=${{ needs.validate.outputs.environment }}
+          echo "Rolling back deployment in $ENV environment"
+          
+          # Rollback to previous deployment
+          kubectl rollout undo deployment/ai-agent-deployment -n $ENV
+          
+          # Wait for rollback to complete
+          kubectl rollout status deployment/ai-agent-deployment -n $ENV --timeout=10m
+
+      - name: Send rollback notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 Rollback executed in ${{ needs.validate.outputs.environment }} environment'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  notify-success:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: success()
+    steps:
+      - name: Send deployment success notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: '✅ Deployment successful in ${{ needs.validate.outputs.environment }} environment using ${{ needs.validate.outputs.deploy_strategy }} strategy'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

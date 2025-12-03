@@ -1,0 +1,169 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "AI Agent Performance Monitoring",
+    "tags": [
+      "ai-agent",
+      "performance",
+      "monitoring"
+    ],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Agent State Transitions",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(agent_state_transitions_total[1h])",
+            "legendFormat": "State Changes",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 0,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Current Agent State",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "agent_state_current",
+            "legendFormat": "Current State",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "ERROR": {
+                    "text": "ERROR",
+                    "color": "red"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "AI Inference Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ai_inference_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 Inference Time",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 0
+        },
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Seconds"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Cache Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) * 100",
+            "legendFormat": "Cache Hit Rate %",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Hit Rate %"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Database Query Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 Query Time",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Seconds"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}

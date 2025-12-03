@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@types/three": "^0.181.0",
+    "d3": "^7.9.0",
+    "react-force-graph-2d": "^1.29.0",
+    "three": "^0.181.2"
+  }
+}

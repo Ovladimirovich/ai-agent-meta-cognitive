@@ -1,0 +1,135 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "AI Agent Health Checks",
+    "tags": [
+      "ai-agent",
+      "health",
+      "monitoring"
+    ],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Overall System Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "health_check_status{check=\"overall\"}",
+            "legendFormat": "System Health",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "text": "UNHEALTHY",
+                    "color": "red"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Health Check Details",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "health_check_status",
+            "legendFormat": "{{check}}",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "gridPos": {
+          "h": 12,
+          "w": 18,
+          "x": 6,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Status"
+              },
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "options": {
+                        "0": {
+                          "text": "UNHEALTHY",
+                          "color": "red"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "title": "Health Check Response Times",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "health_check_duration_seconds",
+            "legendFormat": "{{check}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 12
+        },
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Response Time"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}

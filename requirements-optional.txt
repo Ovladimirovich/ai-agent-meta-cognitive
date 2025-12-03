@@ -1,0 +1,41 @@
+# Опциональные зависимости для AI Agent с Мета-Познанием
+
+# Эти зависимости вызывают проблемы на Windows (fatal exception)
+# Устанавливайте только если уверены в совместимости
+
+# Тяжелые эмбеддинги (вызывают ONNX Runtime проблемы)
+sentence-transformers>=2.2.0
+
+# Векторные базы (тяжелые, требуют внешних сервисов)
+chromadb>=0.4.0
+faiss-cpu>=1.7.0
+weaviate-client>=3.0.0
+qdrant-client>=1.0.0
+
+# ONNX Runtime (основная причина Windows fatal exception)
+onnxruntime>=1.15.0
+onnxruntime-gpu>=1.15.0  # Для GPU
+
+# Альтернативные векторные базы
+pinecone-client>=2.0.0
+milvus>=2.0.0
+
+# Тяжелые ML фреймворки
+tensorflow>=2.13.0
+tensorflow-text>=2.13.0
+
+# GPU версии PyTorch (если есть CUDA)
+# torch>=2.1.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+# torchvision>=0.16.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+
+# Другие тяжелые зависимости
+xgboost>=1.7.0
+lightgbm>=4.0.0
+catboost>=1.2.0
+
+# Для установки опциональных зависимостей:
+# pip install -r requirements-optional.txt
+
+# Для установки только определенных компонентов:
+# pip install sentence-transformers chromadb
+# pip install faiss-cpu onnxruntime

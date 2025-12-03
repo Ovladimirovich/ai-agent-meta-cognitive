@@ -1,0 +1,171 @@
+# Environment specific files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+dist/
+build/
+.nuxt/
+coverage/
+.nyc_output/
+.next/
+out/
+.npm/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.directory
+*.nib
+*.plist
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+
+# Database
+*.db
+*.db-journal
+
+# Local configuration
+config/local.json
+config/local.js
+
+# Secrets and API keys
+secrets/
+credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.p7b
+*.p7c
+*.p7s
+*.crt
+*.cert
+*.csr
+
+# Render secrets
+render-secret.json
+
+# Local environment files
+.env.production
+.env.development
+.env.staging
+
+# Sensitive configuration files
+private/
+keys/
+tokens.json
+
+# Frontend sensitive files
+frontend/.env
+frontend/.env.local
+
+# API keys in any form
+*apikey*
+*api_key*
+*API_KEY*
+*secret*
+*SECRET*
+*token*
+*TOKEN*
+
+# Local storage
+.local/
+.cache/
+
+# Testing
+test/
+tests/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Windows
+[C-c]onfig/
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# Linux
+.directory
+.Trash-*
+
+# Additional sensitive patterns
+*password*
+*PASSWORD*
+*creds*
+*CREDENTIALS*
+*auth*
+*AUTH*
+
+# Specific to your project
+rag_db.sqlite
+logs/
+uploads/
+backups/

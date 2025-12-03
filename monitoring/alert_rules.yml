@@ -1,0 +1,70 @@
+groups:
+- name: ai-agent.rules
+  rules:
+  - alert: AI_Agent_Down
+    annotations:
+      description: AI Agent has been down for more than 5 minutes
+      summary: AI Agent is down
+    expr: up{job="ai-agent"} == 0
+    for: 5m
+    labels:
+      severity: critical
+  - alert: AI_Agent_High_HTTP_Errors
+    annotations:
+      description: AI Agent is experiencing high error rate (> 5%)
+      summary: High error rate on AI Agent
+    expr: rate(http_requests_total{job="ai-agent", status=~"5.."}[5m]) / rate(http_requests_total{job="ai-agent"}[5m])
+      > 0.05
+    for: 2m
+    labels:
+      severity: warning
+  - alert: AI_Agent_High_Response_Time
+    annotations:
+      description: 95th percentile response time is above 5 seconds
+      summary: High response time on AI Agent
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="ai-agent"}[5m]))
+      > 5
+    for: 2m
+    labels:
+      severity: warning
+  - alert: AI_Agent_High_Cognitive_Load
+    annotations:
+      description: AI Agent cognitive load is above 90%
+      summary: High cognitive load on AI Agent
+    expr: cognitive_load_current{job="ai-agent"} > 0.9
+    for: 5m
+    labels:
+      severity: warning
+  - alert: AI_Agent_High_CPU_Usage
+    annotations:
+      description: AI Agent CPU usage is above 90%
+      summary: High CPU usage on AI Agent
+    expr: system_cpu_percent{job="ai-agent"} > 90
+    for: 5m
+    labels:
+      severity: warning
+  - alert: AI_Agent_High_Memory_Usage
+    annotations:
+      description: AI Agent memory usage is above 90%
+      summary: High memory usage on AI Agent
+    expr: system_memory_percent{job="ai-agent"} > 90
+    for: 5m
+    labels:
+      severity: warning
+  - alert: AI_Agent_Low_Success_Rate
+    annotations:
+      description: AI Agent learning success rate is below 50%
+      summary: Low learning success rate
+    expr: learning_success_rate{job="ai-agent"} < 0.5
+    for: 10m
+    labels:
+      severity: warning
+  - alert: AI_Agent_High_Tool_Error_Rate
+    annotations:
+      description: AI Agent tool error rate is above 10%
+      summary: High tool error rate
+    expr: rate(tool_calls_total{status="error"}[5m]) / rate(tool_calls_total[5m])
+      > 0.1
+    for: 2m
+    labels:
+      severity: warning

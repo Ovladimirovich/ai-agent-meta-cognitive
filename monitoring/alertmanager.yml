@@ -1,0 +1,56 @@
+global:
+  smtp_from: alertmanager@ai-agent.local
+  smtp_require_tls: false
+  smtp_smarthost: localhost:25
+inhibit_rules:
+- equal:
+  - alertname
+  - service
+  source_matchers:
+  - severity="critical"
+  target_matchers:
+  - severity="warning"
+receivers:
+- email_configs:
+  - send_resolved: true
+    to: admin@ai-agent.local
+  name: default-receiver
+  webhook_configs:
+  - send_resolved: true
+    url: http://notification-service:8080/alert
+- email_configs:
+  - send_resolved: true
+    to: admin@ai-agent.local,manager@ai-agent.local
+  name: critical-receiver
+  pagerduty_configs:
+  - routing_key: pagerduty-routing-key
+    send_resolved: true
+  webhook_configs:
+  - send_resolved: true
+    url: http://notification-service:8080/critical-alert
+- email_configs:
+  - send_resolved: true
+    to: admin@ai-agent.local
+  name: warning-receiver
+  webhook_configs:
+  - send_resolved: true
+    url: http://notification-service:8080/warning-alert
+route:
+  group_by:
+  - alertname
+  - service
+  group_interval: 5m
+  group_wait: 30s
+  receiver: default-receiver
+  repeat_interval: 12h
+  routes:
+  - group_interval: 5m
+    matchers:
+    - severity="critical"
+    receiver: critical-receiver
+    repeat_interval: 1h
+  - group_interval: 10m
+    matchers:
+    - severity="warning"
+    receiver: warning-receiver
+    repeat_interval: 3h

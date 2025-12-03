@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+title: "AI Agent with Meta-Cognition"
+abstract: "An advanced AI agent system with meta-cognitive capabilities for self-awareness, learning, and adaptation. The system incorporates multiple AI techniques including LLMs, cognitive architectures, and machine learning algorithms to create an intelligent agent capable of introspection and continuous improvement."
+authors:
+  - family-names: "AI Research Team"
+    given-names: "Kilo"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    email: "contact@example.com"
+    affiliation: "AI Research Laboratory"
+    website: "https://github.com/your-username/ai-agent-meta-cognitive"
+  - family-names: "Contributors"
+    given-names: "Various"
+    affiliation: "Open Source Community"
+message: "If you use this software, please cite it as below."
+type: software
+version: 1.0.0
+keywords:
+  - "AI Agent"
+  - "Meta-Cognition"
+  - "Self-Awareness"
+  - "Machine Learning"
+  - "Artificial Intelligence"
+  - "Cognitive Architecture"
+  - "LLM Integration"
+  - "Adaptive Systems"
+repository-code: "https://github.com/your-username/ai-agent-meta-cognitive"
+repository-artifact: "https://github.com/your-username/ai-agent-meta-cognitive/releases"
+license: GPL-3.0-or-later
+date-released: 2025-01-01
+website: "https://github.com/your-username/ai-agent-meta-cognitive"
+maintainers:
+  - family-names: "Maintainer"
+    given-names: "Team"
+    email: "maintainers@example.com"
+    affiliation: "AI Research Team"
+preferred-citation:
+  type: software
+  title: "AI Agent with Meta-Cognition"
+  authors:
+    - family-names: "AI Research Team"
+      given-names: "Kilo"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  repository-code: "https://github.com/your-username/ai-agent-meta-cognitive"
+  version: 1.0.0
+  license: GPL-3.0-or-later
+  date-released: 2025-01-01
+  abstract: "An advanced AI agent system with meta-cognitive capabilities for self-awareness, learning, and adaptation. The system incorporates multiple AI techniques including LLMs, cognitive architectures, and machine learning algorithms to create an intelligent agent capable of introspection and continuous improvement."
+  doi: 10.5281/zenodo.xxxxxx  # Placeholder - replace with actual DOI when published to Zenodo

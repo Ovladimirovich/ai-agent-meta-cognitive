@@ -1,0 +1,63 @@
+# Зависимости для разработки AI Агента с Мета-Познанием
+
+# Основные зависимости (из requirements.txt)
+-r requirements.txt
+
+# Тестирование
+pytest==7.4.4
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-xdist==3.5.0
+pytest-mock==3.12.0
+pytest-html==4.1.1
+pytest-metadata==3.1.1
+pytest-timeout==2.4.0
+pluggy==1.6.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.1
+pre-commit==3.5.0
+
+# Разработка и отладка
+jupyter==1.0.0
+ipykernel==6.25.2
+jupyterlab==4.0.7
+notebook==7.0.6
+
+# Документация
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+mkdocs-mermaid2-plugin==1.1.1
+
+# Профилирование и мониторинг
+memory-profiler==0.61.0
+line-profiler==4.1.2
+py-spy==0.3.14
+
+# Инструменты разработки
+cookiecutter==2.5.0
+pip-tools==7.3.0
+tox==4.11.4
+
+# Безопасность
+bandit==1.7.6
+safety==2.3.5
+
+# CI/CD
+ghp-import==2.1.0
+twine==4.0.2
+
+# Дополнительные утилиты
+rich==13.7.0
+tqdm==4.66.1
+python-dotenv==1.0.0
+
+# Для работы с Git
+GitPython==3.1.40
+
+# Для создания DOI
+zenodo-client==0.2.0
+
+# Опционально: GPU поддержка для разработки
+# torch==2.1.1+cu118 --index-url https://download.pytorch.org/whl/cu118
+# torchvision==0.16.1+cu118 --index-url https://download.pytorch.org/whl/cu118
