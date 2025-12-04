@@ -645,6 +645,16 @@ async def create_distributed_task_queue() -> DistributedTaskQueue:
         backend = RedisTaskQueueBackend(redis_client)
 
         logger.info("Redis-based task queue backend initialized")
+    except ImportError as e:
+        logger.warning(f"Redis library not available, using fallback mechanism: {e}")
+        # В случае отсутствия Redis библиотеки используем fallback
+        try:
+            from .distributed_task_queue_fallback import FallbackTaskQueueBackend
+            backend = FallbackTaskQueueBackend()
+            logger.info("Fallback task queue backend initialized")
+        except ImportError:
+            logger.error("Fallback task queue backend not available")
+            raise
     except Exception as e:
         logger.warning(f"Failed to connect to Redis, using fallback mechanism: {e}")
         # В случае ошибки подключения к Redis можно использовать альтернативный бэкенд
