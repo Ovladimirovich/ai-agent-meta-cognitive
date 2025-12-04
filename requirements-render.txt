@@ -65,3 +65,6 @@ psutil==5.9.6
 
 # Модуль для вычислений (требуется для confidence_calculator.py)
 numpy>=1.21.0
+
+# Модуль для обработки изображений (требуется для multimodality_learning.py)
+Pillow>=10.0.0
