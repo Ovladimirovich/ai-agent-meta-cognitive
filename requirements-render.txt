@@ -62,3 +62,6 @@ typing-extensions==4.8.0
 
 # Модуль для мониторинга системных ресурсов (требуется для memory_manager_optimized.py)
 psutil==5.9.6
+
+# Модуль для вычислений (требуется для confidence_calculator.py)
+numpy>=1.21.0
