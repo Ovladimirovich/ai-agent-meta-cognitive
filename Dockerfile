@@ -11,11 +11,16 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # Копируем файлы зависимостей
-COPY requirements.txt requirements-dev.txt ./
+COPY requirements.txt requirements-dev.txt requirements-render.txt ./
+
+# Устанавливаем зависимости - используем разные файлы в зависимости от среды
+# По умолчанию используем основной requirements.txt
+ARG REQUIREMENTS_FILE=requirements.txt
+ENV REQUIREMENTS_FILE=${REQUIREMENTS_FILE}
 
 # Устанавливаем зависимости
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r ${REQUIREMENTS_FILE}
 
 # Копируем исходный код
 COPY . .

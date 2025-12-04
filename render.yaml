@@ -1,32 +1,31 @@
 services:
-- type: web
-  name: ai-agent-backend
-  env: python
-  buildCommand: pip install -r requirements.txt
-  startCommand: uvicorn api.main:app --host=0.0.0 --port=$PORT
-  envVars:
-  - key: PYTHON_VERSION
-    value: 3.11
-  - key: ENVIRONMENT
-    value: production
-  - key: REDIS_URL
-    value: $REDIS_URL
-  - key: DATABASE_URL
-    value: $DATABASE_URL
-  - key: API_HOST
-    value: 0.0.0.0
-  - key: API_PORT
-    value: $PORT
-  - key: LOG_LEVEL
-    value: info
-  healthCheckPath: /health
-  numInstances: 1
-  plan: free
+  - type: web
+    name: ai-agent-backend
+    runtime: python
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn api.main:app --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: ENVIRONMENT
+        value: production
+      - key: REDIS_URL
+        value: $REDIS_URL
+      - key: DATABASE_URL
+        value: $DATABASE_URL
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: $PORT
+      - key: LOG_LEVEL
+        value: info
+    healthCheckPath: /health
+    numInstances: 1
+    plan: free
 
 databases:
-- name: ai-agent-db
-  plan: free
-  region: oregon
-  databaseName: ai_agent_db
-  user: ai_agent_user
-  plan: free
+  - name: ai-agent-db
+    region: oregon
+    databaseName: ai_agent_db
+    user: ai_agent_user
+    plan: free
