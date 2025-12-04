@@ -45,8 +45,12 @@ class AgentCore:
         # Инициализация менеджера предварительной загрузки
         self.preload_manager = None
         if self.memory_manager:
-            from .preload_manager import PreloadManager
-            self.preload_manager = PreloadManager(self.memory_manager, config)
+            try:
+                from .preload_manager import PreloadManager
+                self.preload_manager = PreloadManager(self.memory_manager, config)
+            except ImportError:
+                logger.warning("PreloadManager not available, skipping initialization")
+                self.preload_manager = None
 
         # Мета-познавательные компоненты
         self.reasoning_trace: list[ReasoningStep] = []
@@ -127,10 +131,21 @@ class AgentCore:
         try:
             asyncio.run(self._init_llm_client_async())
         except RuntimeError:
-            # Если уже есть event loop, создаем новый
-            import nest_asyncio
-            nest_asyncio.apply()
-            asyncio.run(self._init_llm_client_async())
+            # Если уже есть event loop, используем run_coroutine_threadsafe
+            import threading
+            if not hasattr(self, '_loop') or not self._loop.is_running():
+                # Если нет активного цикла, создаем новый поток
+                def run_in_thread():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    try:
+                        loop.run_until_complete(self._init_llm_client_async())
+                    finally:
+                        loop.close()
+
+                thread = threading.Thread(target=run_in_thread)
+                thread.start()
+                thread.join()
 
     @circuit_breaker_decorator("agent_core_process", CircuitBreakerConfig(
         failure_threshold=5,
@@ -395,28 +410,17 @@ class AgentCore:
             for memory in preloaded_memories:
                 if hasattr(memory, 'metadata') and memory.metadata.get('preload_priority', 0) > 0:
                     return memory.content
-                    
+
         # Также проверяем через менеджер предварительной загрузки
         if self.preload_manager:
             preloaded_data = await self.preload_manager.get_preloaded_data(query)
             if preloaded_data:
                 return preloaded_data
-                
+
         return None
 
     async def _get_cached_response(self, cache_key: str) -> Optional[str]:
-        """Получение ответа из кэша с приоритетом Redis"""
-        # Сначала проверяем Redis кэш
-        try:
-            import redis
-            redis_client = redis.from_url(self.config.redis_url)
-            cached_data = redis_client.get(f"agent_cache:{cache_key}")
-            if cached_data:
-                logger.info("✅ Retrieved response from Redis cache")
-                return cached_data.decode('utf-8')
-        except Exception as e:
-            logger.warning(f"Redis cache unavailable: {e}")
-
+        """Получение ответа из кэша"""
         # Fallback к памяти
         if self.memory_manager:
             recent_memories = self.memory_manager.retrieve_episodic_memory(limit=5)
@@ -427,19 +431,13 @@ class AgentCore:
         return None
 
     async def _cache_response(self, cache_key: str, response: str):
-        """Сохранение ответа в кэш с приоритетом Redis"""
-        # Сначала сохраняем в Redis
-        try:
-            import redis
-            redis_client = redis.from_url(self.config.redis_url)
-            redis_client.setex(f"agent_cache:{cache_key}", 300, response)  # 5 минут TTL
-            logger.info("✅ Cached response in Redis")
-        except Exception as e:
-            logger.warning(f"Redis cache unavailable, using memory fallback: {e}")
-
+        """Сохранение ответа в кэш"""
         # Fallback к памяти
         if self.memory_manager and hasattr(self.memory_manager, 'store_working_memory'):
-            await self.memory_manager.store_working_memory(cache_key, response, ttl_seconds=300)
+            try:
+                await self.memory_manager.store_working_memory(cache_key, response, ttl_seconds=300)
+            except Exception as e:
+                logger.warning(f"Failed to cache response in memory: {e}")
 
     async def _generate_fallback_response(self, request: AgentRequest) -> str:
         """Резервная генерация ответа без LLM"""

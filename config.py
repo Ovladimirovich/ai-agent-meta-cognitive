@@ -220,6 +220,18 @@ class Config:
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
     @property
+    def redis_available(self) -> bool:
+        """Проверка доступности Redis"""
+        try:
+            redis_url = self.redis_url
+            # Проверяем, что URL не является локальным значением по умолчанию, если мы ожидаем Redis в продакшене
+            if self.is_production and ("localhost" in redis_url or "127.0.0.1" in redis_url):
+                return False
+            return True
+        except Exception:
+            return False
+
+    @property
     def chroma_url(self) -> str:
         """ChromaDB connection URL"""
         return f"http://{self.chroma_host}:{self.chroma_port}"

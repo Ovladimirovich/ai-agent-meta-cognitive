@@ -192,7 +192,7 @@ class RedisTaskQueueBackend(TaskQueueBackend):
         try:
             # Используем блоĸирующую операцию для получения задачи
             queue_key = f"task_queue:{queue_name}" if queue_name != "default" else self.queue_key
-            
+
             # Получаем задачи с учетом приоритета (сортировка по score)
             task_ids = await self.redis.zrange(queue_key, 0, 0, withscores=True)
             if not task_ids:
@@ -366,7 +366,7 @@ class RedisTaskQueueBackend(TaskQueueBackend):
 class DistributedTaskQueue:
     """
     Распределенная очередь задач с поддержкой обработки команд CQRS
-    
+
     Этот класс интегрируется с существующей системой CQRS и обеспечивает:
     - Асинхронную обработку задач
     - Масштабируемость через внешние брокеры
@@ -428,7 +428,7 @@ class DistributedTaskQueue:
         # Счетчик последовательных ошибок подключения к Redis
         consecutive_redis_errors = 0
         max_redis_errors_before_slowdown = 5 # После 5 ошибок переходим в щадящий режим
-        
+
         while self.is_running:
             try:
                 # Получаем задачу из очереди
@@ -455,7 +455,7 @@ class DistributedTaskQueue:
                 # Увеличиваем счетчик ошибок Redis
                 consecutive_redis_errors += 1
                 logger.warning(f"Worker {worker_id} Redis connection error (attempt {consecutive_redis_errors}): {e}")
-                
+
                 # Увеличиваем паузу при последовательных ошибках
                 if consecutive_redis_errors >= max_redis_errors_before_slowdown:
                     # В щадящем режиме ждем дольше
@@ -640,22 +640,26 @@ async def create_distributed_task_queue() -> DistributedTaskQueue:
     try:
         # Создаем Redis клиент
         redis_client = redis.from_url(config.redis_url)
-        
+
         # Создаем бэкенд
         backend = RedisTaskQueueBackend(redis_client)
-        
+
         logger.info("Redis-based task queue backend initialized")
     except Exception as e:
         logger.warning(f"Failed to connect to Redis, using fallback mechanism: {e}")
         # В случае ошибки подключения к Redis можно использовать альтернативный бэкенд
         # или настроить систему так, чтобы она могла работать без очереди
-        from .distributed_task_queue_fallback import FallbackTaskQueueBackend
-        backend = FallbackTaskQueueBackend()
-        logger.info("Fallback task queue backend initialized")
-    
+        try:
+            from .distributed_task_queue_fallback import FallbackTaskQueueBackend
+            backend = FallbackTaskQueueBackend()
+            logger.info("Fallback task queue backend initialized")
+        except ImportError:
+            logger.error("Fallback task queue backend not available")
+            raise
+
     # Создаем очередь задач
     task_queue = DistributedTaskQueue(backend)
-    
+
     return task_queue
 
 
@@ -704,10 +708,10 @@ async def example_usage():
     """Пример использования распределенной очереди задач"""
     # Создаем очередь задач
     task_queue = await create_distributed_task_queue()
-    
+
     # Запускаем очередь
     await task_queue.start()
-    
+
     # Создаем пример задачи
     task = Task(
         id=str(uuid.uuid4()),
@@ -715,22 +719,22 @@ async def example_usage():
         payload={"message": "Hello, distributed world!"},
         priority=TaskPriority.NORMAL
     )
-    
+
     # Добавляем задачу в очередь
     success = await task_queue.enqueue_task(task)
     print(f"Task enqueued: {success}")
-    
+
     # Получаем статус задачи
     status = await task_queue.get_task_status(task.id)
     print(f"Task status: {status}")
-    
+
     # Ждем выполнения задачи (в реальном приложении это асинхронно)
     await asyncio.sleep(2)
-    
+
     # Получаем результат
     result = await task_queue.get_task_result(task.id)
     print(f"Task result: {result}")
-    
+
     # Останавливаем очередь
     await task_queue.stop()
 

@@ -20,7 +20,7 @@ ENV REQUIREMENTS_FILE=${REQUIREMENTS_FILE}
 
 # Устанавливаем зависимости
 RUN pip install --upgrade pip && \
-    pip install -r ${REQUIREMENTS_FILE}
+    pip install --no-cache-dir -r ${REQUIREMENTS_FILE}
 
 # Копируем исходный код
 COPY . .

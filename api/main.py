@@ -118,8 +118,29 @@ class AppDependencies:
                 logger.error("❌ Cannot initialize Self Monitoring System: agent_core is None")
 
             # Инициализация распределенной очереди задач
-            self.task_queue = await create_distributed_task_queue()
-            logger.info("✅ Distributed Task Queue initialized")
+            try:
+                self.task_queue = await create_distributed_task_queue()
+                logger.info("✅ Distributed Task Queue initialized")
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize Distributed Task Queue: {e}")
+                # Используем fallback очередь задач
+                try:
+                    from distributed_task_queue_fallback import create_distributed_task_queue as fallback_create_queue
+                    self.task_queue = await fallback_create_queue()
+                    logger.info("✅ Fallback Distributed Task Queue initialized")
+                except Exception as fallback_error:
+                    logger.error(f"❌ Failed to initialize fallback queue: {fallback_error}")
+                    # В крайнем случае создаем пустой очередь для предотвращения падения приложения
+                    class EmptyTaskQueue:
+                        async def start(self): pass
+                        async def stop(self): pass
+                        async def enqueue_task(self, task): return False
+                        async def get_task_status(self, task_id): return None
+                        async def get_task_result(self, task_id): return None
+                        async def get_queue_size(self): return 0
+                        is_running = False
+                    self.task_queue = EmptyTaskQueue()
+                    logger.warning("⚠️ Empty task queue created - async tasks will not be processed")
 
         except Exception as e:
             logger.error(f"❌ Failed to initialize dependencies: {e}")
@@ -132,7 +153,7 @@ class AppDependencies:
         try:
             if self.meta_controller and hasattr(self.meta_controller, 'health_monitor') and self.meta_controller.health_monitor:
                 self.meta_controller.health_monitor.stop_monitoring()
-            
+
             # Остановка очереди задач
             if self.task_queue:
                 await self.task_queue.stop()
@@ -264,10 +285,10 @@ async def monitor_task_queue_with_error_handling():
         while True:
             if not dependencies.task_queue or not dependencies.task_queue.is_running:
                 break
-                
+
             queue_size = await dependencies.task_queue.get_queue_size()
             logger.info(f"📊 Task queue size: {queue_size}")
-            
+
             # Ожидание перед следующей проверкой
             await asyncio.sleep(30)  # Проверка каждые 30 секунд
     except Exception as e:
@@ -907,7 +928,7 @@ async def get_learning_analytics(timeframe: str = "7d", current_user: User = Dep
     """
     try:
         logger.info(f"🔄 Fetching learning analytics for timeframe: {timeframe}")
-        
+
         if not dependencies.learning_engine:
             logger.warning("⚠️ Learning engine not available")
             return {
@@ -917,10 +938,10 @@ async def get_learning_analytics(timeframe: str = "7d", current_user: User = Dep
                 "patterns": [],
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         # Получаем метрики обучения
         metrics = await dependencies.learning_engine.get_learning_metrics(timeframe)
-        
+
         # Форматируем данные для визуализации
         analytics_data = {
             "timeframe": timeframe,
@@ -943,10 +964,10 @@ async def get_learning_analytics(timeframe: str = "7d", current_user: User = Dep
             ],
             "timestamp": datetime.now().isoformat()
         }
-        
+
         logger.info(f"✅ Learning analytics fetched successfully for timeframe: {timeframe}")
         return analytics_data
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to get learning analytics: {e}")
         import traceback
@@ -1177,13 +1198,13 @@ async def serve_spa(full_path: str = ""):
         "health", "agent", "learning", "learning-analytics", "system", "auth", "graphql",
         "docs", "redoc", "openapi.json", "debug"
     ]
-    
+
     # Проверяем, является ли маршрут API маршрутом
     route_parts = [part for part in full_path.split("/") if part]  # Убираем пустые части
     if route_parts and route_parts[0] in api_routes:
         # Это API маршрут, но мы не нашли его, значит возвращаем 404
         raise HTTPException(status_code=404, detail="API endpoint not found")
-    
+
     # Для всех остальных маршрутов возвращаем корневой эндпоинт,
     # который будет обработан как SPA
     return await root()

@@ -13,7 +13,6 @@ import json
 from hashlib import md5
 
 # Импортируем систему кэширования
-from agent.caching.cache_manager import get_cache_instance, make_cache_key
 from .circuit_breaker import circuit_breaker_decorator, CircuitBreakerConfig
 
 logger = logging.getLogger(__name__)
@@ -89,7 +88,7 @@ class LLMClient:
             use_dns_cache=True,
             ssl=False # Отключаем SSL для производительности (в продакшене может потребоваться включить)
         )
-        
+
         # Паттерны для обнаружения prompt injection
         self.injection_patterns = [
             r'(?i)\b(ignore|disregard|forget|override|bypass)\b.*\b(previous|above|following|instructions|rules)\b',
@@ -152,16 +151,21 @@ class LLMClient:
         if use_cache:
             # Используем новый метод для создания более точного кэш-ключа
             cache_key = self._create_aggressive_cache_key(prompt, system_message, context)
-            
+
             # Проверяем кэш на всех уровнях
-            cache = get_cache_instance()
-            cached_result = await cache.get(cache_key)
-            if cached_result is not None:
-                logger.info(f"Cache hit for key: {cache_key[:16]}...")
-                # Добавляем информацию о кэшировании к результату
-                cached_result["from_cache"] = True
-                cached_result["processing_time"] = time.time() - start_time
-                return cached_result
+            try:
+                from agent.caching.cache_manager import get_cache_instance, make_cache_key
+                cache = get_cache_instance()
+                cached_result = await cache.get(cache_key)
+                if cached_result is not None:
+                    logger.info(f"Cache hit for key: {cache_key[:16]}...")
+                    # Добавляем информацию о кэшировании к результату
+                    cached_result["from_cache"] = True
+                    cached_result["processing_time"] = time.time() - start_time
+                    return cached_result
+            except ImportError:
+                logger.warning("Cache manager not available, skipping cache check")
+                pass
 
         # Проверка на prompt injection перед обработкой
         injection_detected, patterns = self._detect_prompt_injection(prompt)
@@ -209,10 +213,16 @@ class LLMClient:
 
                 # Сохраняем результат в кэш, если кэширование включено
                 if use_cache and cache_key:
-                    # Используем агрессивное кэширование с увеличенным TTL для частых запросов
-                    aggressive_ttl = cache_ttl * 2  # Удваиваем время жизни для агрессивного кэширования
-                    await cache.set(cache_key, result, ttl=aggressive_ttl)
-                    logger.info(f"Cache set for key: {cache_key[:16]}... with TTL: {aggressive_ttl}")
+                    try:
+                        from agent.caching.cache_manager import get_cache_instance, make_cache_key
+                        cache = get_cache_instance()
+                        # Используем агрессивное кэширование с увеличенным TTL для частых запросов
+                        aggressive_ttl = cache_ttl * 2  # Удваиваем время жизни для агрессивного кэширования
+                        await cache.set(cache_key, result, ttl=aggressive_ttl)
+                        logger.info(f"Cache set for key: {cache_key[:16]}... with TTL: {aggressive_ttl}")
+                    except ImportError:
+                        logger.warning("Cache manager not available, skipping cache set")
+                        pass
 
                 return result
 
@@ -245,7 +255,7 @@ class LLMClient:
         """Обнаружение потенциальных prompt injection атак"""
         if not prompt:
             return False, []
-            
+
         detected_patterns = []
 
         for pattern in self.injection_patterns:
@@ -297,7 +307,7 @@ class LLMClient:
                 else:
                     sanitized_message[key] = value
             sanitized_context.append(sanitized_message)
-            
+
         return sanitized_context
 
     async def _call_ollama(
@@ -801,7 +811,7 @@ async def create_llm_client(provider: str = "openai", **kwargs) -> LLMClient:
 async def example_usage():
     """Пример использования LLM клиента"""
     import os
-    
+
     # Получение API-ключа из переменной окружения
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:

@@ -11,9 +11,28 @@ import os
 from typing import Any, Dict, Optional, Union, List
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-import redis
-import psutil
-from prometheus_client import Counter, Histogram, Gauge
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    psutil = None
+
+try:
+    from prometheus_client import Counter, Histogram, Gauge
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+    Counter = None
+    Histogram = None
+    Gauge = None
 
 
 @dataclass
@@ -68,13 +87,27 @@ class L1Cache(CacheLayer):
         self.access_order = []  # Для отслеживания порядка доступа к элементам
 
         # Metrics
-        self.hits = Counter('l1_cache_hits_total', 'L1 cache hits')
-        self.misses = Counter('l1_cache_misses_total', 'L1 cache misses')
-        self.evictions = Counter('l1_cache_evictions_total', 'L1 cache evictions')
-        self.memory_usage = Gauge('l1_cache_memory_bytes', 'L1 cache memory usage')
-        
-        # Добавляем счетчик для отслеживания количества элементов в кэше
-        self.entry_count_gauge = Gauge('l1_cache_entries_count', 'L1 cache entries count')
+        if PROMETHEUS_AVAILABLE:
+            self.hits = Counter('l1_cache_hits_total', 'L1 cache hits')
+            self.misses = Counter('l1_cache_misses_total', 'L1 cache misses')
+            self.evictions = Counter('l1_cache_evictions_total', 'L1 cache evictions')
+            self.memory_usage = Gauge('l1_cache_memory_bytes', 'L1 cache memory usage')
+
+            # Добавляем счетчик для отслеживания количества элементов в кэше
+            self.entry_count_gauge = Gauge('l1_cache_entries_count', 'L1 cache entries count')
+        else:
+            # Заглушки для метрик, если prometheus недоступен
+            class DummyMetric:
+                def inc(self, value=1): pass
+                def set(self, value): pass
+                @property
+                def _value(self): return 0
+
+            self.hits = DummyMetric()
+            self.misses = DummyMetric()
+            self.evictions = DummyMetric()
+            self.memory_usage = DummyMetric()
+            self.entry_count_gauge = DummyMetric()
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from L1 cache"""
@@ -90,7 +123,7 @@ class L1Cache(CacheLayer):
             # Update access metadata
             entry.access_count += 1
             entry.last_accessed = time.time()
-            
+
             # Обновляем порядок доступа к элементам
             if key in self.access_order:
                 self.access_order.remove(key)
@@ -205,9 +238,21 @@ class L2Cache(CacheLayer):
         self.prefix = prefix
 
         # Metrics
-        self.hits = Counter('l2_cache_hits_total', 'L2 cache hits')
-        self.misses = Counter('l2_cache_misses_total', 'L2 cache misses')
-        self.errors = Counter('l2_cache_errors_total', 'L2 cache errors')
+        if PROMETHEUS_AVAILABLE:
+            self.hits = Counter('l2_cache_hits_total', 'L2 cache hits')
+            self.misses = Counter('l2_cache_misses_total', 'L2 cache misses')
+            self.errors = Counter('l2_cache_errors_total', 'L2 cache errors')
+        else:
+            # Заглушки для метрик, если prometheus недоступен
+            class DummyMetric:
+                def inc(self, value=1): pass
+                def set(self, value): pass
+                @property
+                def _value(self): return 0
+
+            self.hits = DummyMetric()
+            self.misses = DummyMetric()
+            self.errors = DummyMetric()
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from L2 cache"""
@@ -281,9 +326,21 @@ class L3Cache(CacheLayer):
         os.makedirs(cache_dir, exist_ok=True)
 
         # Metrics
-        self.hits = Counter('l3_cache_hits_total', 'L3 cache hits')
-        self.misses = Counter('l3_cache_misses_total', 'L3 cache misses')
-        self.errors = Counter('l3_cache_errors_total', 'L3 cache errors')
+        if PROMETHEUS_AVAILABLE:
+            self.hits = Counter('l3_cache_hits_total', 'L3 cache hits')
+            self.misses = Counter('l3_cache_misses_total', 'L3 cache misses')
+            self.errors = Counter('l3_cache_errors_total', 'L3 cache errors')
+        else:
+            # Заглушки для метрик, если prometheus недоступен
+            class DummyMetric:
+                def inc(self, value=1): pass
+                def set(self, value): pass
+                @property
+                def _value(self): return 0
+
+            self.hits = DummyMetric()
+            self.misses = DummyMetric()
+            self.errors = DummyMetric()
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from L3 cache"""
@@ -403,15 +460,40 @@ class MultiLevelCache:
     L1 -> L2 -> L3 hierarchy
     """
 
-    def __init__(self, redis_client: redis.Redis):
-        self.l1_cache = L1Cache(max_size=10000, max_memory_mb=1024)
-        self.l2_cache = L2Cache(redis_client)
+    def __init__(self, redis_client=None):
+        self.l1_cache = L1Cache(max_size=100, max_memory_mb=1024)
+        if REDIS_AVAILABLE and redis_client:
+            self.l2_cache = L2Cache(redis_client)
+        else:
+            # Заглушка для L2 кэша, если Redis недоступен
+            class DummyL2Cache(CacheLayer):
+                async def get(self, key: str) -> Optional[Any]: return None
+                async def set(self, key: str, value: Any, ttl: int = 3600) -> bool: return True
+                async def delete(self, key: str) -> bool: return True
+                async def clear(self) -> bool: return True
+                async def get_stats(self) -> Dict[str, Any]: return {}
+            self.l2_cache = DummyL2Cache()
         self.l3_cache = L3Cache(max_size_gb=50.0)
 
         # Metrics
-        self.total_requests = Counter('cache_total_requests', 'Total cache requests')
-        self.cache_hits = Counter('cache_hits_total', 'Cache hits by level', ['level'])
-        self.cache_misses = Counter('cache_misses_total', 'Cache misses')
+        if PROMETHEUS_AVAILABLE:
+            self.total_requests = Counter('cache_total_requests', 'Total cache requests')
+            self.cache_hits = Counter('cache_hits_total', 'Cache hits by level', ['level'])
+            self.cache_misses = Counter('cache_misses_total', 'Cache misses')
+        else:
+            # Заглушки для метрик, если prometheus недоступен
+            class DummyMetric:
+                def inc(self, value=1): pass
+                def set(self, value): pass
+                @property
+                def _value(self): return 0
+
+                def labels(self, **kwargs):
+                    return self
+
+            self.total_requests = DummyMetric()
+            self.cache_hits = DummyMetric()
+            self.cache_misses = DummyMetric()
         # Инициализируем задачу для периодической очистки устаревших записей в L1 кэше
         self._cleanup_task = None
 
@@ -465,24 +547,24 @@ class MultiLevelCache:
             try:
                 # Ждем 5 минут перед следующей проверкой
                 await asyncio.sleep(300)
-                
+
                 # Получаем текущее время
                 current_time = time.time()
                 expired_keys = []
-                
+
                 # Проверяем каждый элемент в кэше на просрочку
                 for key, entry in self.l1_cache.cache.items():
                     if current_time - entry.created_at > entry.ttl:
                         expired_keys.append(key)
-                
+
                 # Удаляем просроченные элементы
                 for key in expired_keys:
                     await self.l1_cache.delete(key)
-                    
+
                 # Также вызываем сборщик мусора для предотвращения утечек памяти
                 import gc
                 gc.collect()
-                    
+
             except asyncio.CancelledError:
                 # Завершаем задачу при отмене
                 break
@@ -565,12 +647,18 @@ def get_cache_instance() -> MultiLevelCache:
     """Get global cache instance"""
     global cache
     if cache is None:
-        # Initialize Redis client
-        redis_client = redis.Redis(
-            host=os.getenv('REDIS_HOST', 'redis-service'),
-            port=int(os.getenv('REDIS_PORT', 6379)),
-            decode_responses=False
-        )
+        # Initialize Redis client if available
+        redis_client = None
+        if REDIS_AVAILABLE:
+            try:
+                redis_client = redis.Redis(
+                    host=os.getenv('REDIS_HOST', 'redis-service'),
+                    port=int(os.getenv('REDIS_PORT', 6379)),
+                    decode_responses=False
+                )
+            except Exception as e:
+                print(f"Could not connect to Redis: {e}, using in-memory cache only")
+                redis_client = None
         cache = MultiLevelCache(redis_client)
     return cache
 

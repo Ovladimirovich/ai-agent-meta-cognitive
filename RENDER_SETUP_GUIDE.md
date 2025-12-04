@@ -166,3 +166,5 @@ REQUIREMENTS_FILE=requirements-render.txt
 ```
 
 Это позволит Docker-контейнеру использовать правильный набор зависимостей, совместимый с окружением Render.com.
+
+Также рекомендуется установить переменную окружения `REQUIREMENTS_FILE` в настройках сервиса на Render.com со значением `requirements-render.txt`.
