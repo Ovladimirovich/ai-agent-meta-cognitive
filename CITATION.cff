@@ -20,9 +20,18 @@ url: https://github.com/Ovladimirovich/ai-agent-meta-cognitive
 
 authors:
   - family-names: Ovladimirovich
+<<<<<<< HEAD
     given-names: [Oleg]  
 
 maintainers:
   - family-names: Ovladimirovich
     given-names: [Oleg]  
     email: olegluh1969@gmail.com
+=======
+    given-names: Oleg
+
+maintainers:
+  - family-names: Ovladimirovich
+    given-names: Oleg
+    email: olegluh1969@gmail.com
+>>>>>>> 325ed2fed876ea0bc1979d372827fd9d97fab344
