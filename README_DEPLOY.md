@@ -33,15 +33,16 @@
    - Render автоматически обнаружит Dockerfile
 
 3. Настройте переменные окружения:
-   ```
-   DATABASE_URL: URL для подключения к базе данных (Render предоставляет автоматически)
-   REDIS_URL: URL для подключения к Redis (Render предоставляет автоматически)
-   OPENAI_API_KEY: [ваш API-ключ OpenAI, если используется]
-   GOOGLE_AI_API_KEY: [ваш API-ключ Google AI, если используется]
-   SECRET_KEY: [сгенерируйте надежный секретный ключ]
-   JWT_SECRET_KEY: [сгенерируйте надежный JWT секретный ключ]
-   LOG_LEVEL: info
-   ```
+    ```
+    REQUIREMENTS_FILE: requirements-render.txt
+    DATABASE_URL: URL для подключения к базе данных (Render предоставляет автоматически)
+    REDIS_URL: URL для подключения к Redis (Render предоставляет автоматически)
+    OPENAI_API_KEY: [ваш API-ключ OpenAI, если используется]
+    GOOGLE_AI_API_KEY: [ваш API-ключ Google AI, если используется]
+    SECRET_KEY: [сгенерируйте надежный секретный ключ]
+    JWT_SECRET_KEY: [сгенерируйте надежный JWT секретный ключ]
+    LOG_LEVEL: info
+    ```
 
 4. Установите переменные окружения в Render:
    - Перейдите в Settings → Environment Variables

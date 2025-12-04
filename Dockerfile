@@ -14,8 +14,8 @@ WORKDIR /app
 COPY requirements.txt requirements-dev.txt requirements-render.txt ./
 
 # Устанавливаем зависимости - используем разные файлы в зависимости от среды
-# По умолчанию используем основной requirements.txt
-ARG REQUIREMENTS_FILE=requirements.txt
+# По умолчанию используем файл зависимостей для Render.com
+ARG REQUIREMENTS_FILE=requirements-render.txt
 ENV REQUIREMENTS_FILE=${REQUIREMENTS_FILE}
 
 # Устанавливаем зависимости
