@@ -18,6 +18,9 @@ COPY requirements.txt requirements-dev.txt requirements-render.txt ./
 ARG REQUIREMENTS_FILE=requirements-render.txt
 ENV REQUIREMENTS_FILE=${REQUIREMENTS_FILE}
 
+# Экспортируем порт, который будет использоваться
+EXPOSE $PORT 8000
+
 # Устанавливаем зависимости
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r ${REQUIREMENTS_FILE}

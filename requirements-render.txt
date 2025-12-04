@@ -22,7 +22,7 @@ aiohttp==3.9.1
 structlog==23.2.0
 
 # Безопасность (простые библиотеки)
-python-jose[cryptography]==3.3.0
+python-jose==3.3.0
 bleach==6.1.0
 sqlparse==0.4.4
 
