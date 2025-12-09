@@ -6,7 +6,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/shared/ui/atoms/Button';
 import { apiClient } from '@/shared/lib/apiClient';
 import { AgentRequest, AgentResponse } from '@/shared/types/api';
-// Удаляем неиспользуемый импорт
 import { ChatMessage } from '@/shared/types/chat';
 import { useQueryClient } from '@tanstack/react-query';
 import DOMPurify from 'dompurify';
@@ -105,7 +104,7 @@ export const AgentChatInterface: React.FC<AgentChatInterfaceProps> = ({
       {/* Заголовок */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-semibold text-gray-90 dark:text-white">
             Мета-Когнитивный AI Агент
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -182,7 +181,7 @@ export const AgentChatInterface: React.FC<AgentChatInterfaceProps> = ({
 
         {/* Сообщение об ошибке */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-20 dark:border-red-800 rounded-lg p-3">
             <div className="flex items-center">
               <div className="text-red-60 dark:text-red-400 text-sm">
                 ⚠️ {error}
@@ -202,7 +201,7 @@ export const AgentChatInterface: React.FC<AgentChatInterfaceProps> = ({
             onChange={(e) => setInputValue(DOMPurify.sanitize(e.target.value))}
             onKeyPress={handleKeyPress}
             placeholder="Введите ваше сообщение..."
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-40"
             rows={2}
             disabled={isLoading}
           />
