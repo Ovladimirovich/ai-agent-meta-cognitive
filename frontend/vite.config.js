@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/ai_agent_meta_cognitive/', // Для GitHub Pages
+  base: '/ai-agent-meta-cognitive/', // Для GitHub Pages
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),

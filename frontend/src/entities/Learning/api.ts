@@ -52,16 +52,16 @@ export const learningApi = {
     // Формируем параметры запроса
     const params = new URLSearchParams();
     params.append('timeframe', timeframe);
-    
+
     if (taskType) {
       params.append('task_type', taskType);
     }
-    
+
     if (dateRange) {
       params.append('start_date', dateRange.start);
       params.append('end_date', dateRange.end);
     }
-    
+
     const queryString = params.toString();
     const apiResponse = await apiClient.getLearningMetrics(queryString);
     return mapApiToWidgetTypes.mapLearningMetrics(apiResponse);
