@@ -66,13 +66,15 @@ try:
     except Exception as e:
         logger.warning(f"⚠️ Failed to setup rate limiting: {e}")
 
-    # Настройка middleware безопасности
-    try:
-        from api.advanced_security import create_security_middleware
-        app.middleware("http")(create_security_middleware())
-        logger.info("✅ Security middleware configured")
-    except Exception as e:
-        logger.warning(f"⚠️ Failed to setup security middleware: {e}")
+    # Настройка middleware безопасности - отключена для Render.com
+    # try:
+    #     from api.advanced_security import create_security_middleware
+    #     security_middleware = create_security_middleware()
+    #     if security_middleware:
+    #         app.add_middleware(type(security_middleware), **security_middleware.__dict__ if hasattr(security_middleware, '__dict__') else {})
+    #     logger.info("✅ Security middleware configured")
+    # except Exception as e:
+    #     logger.warning(f"⚠️ Failed to setup security middleware: {e}")
 
     # Регистрация дополнительных эндпоинтов
     try:
