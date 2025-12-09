@@ -43,5 +43,8 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  define: {
+    'process.env': process.env
   }
 });

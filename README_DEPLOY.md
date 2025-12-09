@@ -78,19 +78,19 @@ Workflow `.github/workflows/frontend-deploy.yml` автоматически ра
 
 ## Настройка взаимодействия фронтенда и бэкенда
 
-После развертывания бэкенда на Render.com:
+После развертывания бэкенда на Render.com и настройки Docker Compose:
 
 1. Обновите URL бэкенда в фронтенд-приложении:
-   - Создайте или измените файл `.env.production` в директории `frontend/` и укажите URL вашего бэкенда на Render.com в переменной `VITE_API_BASE_URL`:
-     ```
-     VITE_API_BASE_URL=https://your-render-app-url.onrender.com/api
-     ```
+   - Для продакшена в Docker Compose проксирование настроено через nginx, фронтенд будет использовать относительный путь `/api` для доступа к бэкенду
+   - В `nginx.conf` уже настроено проксирование `/api/` запросов к бэкенду
    - Для локальной разработки используйте `.env` файл с переменной `VITE_API_BASE_URL=http://localhost:8000/api`
 
-2. Настройте CORS в бэкенде (в Render в переменных окружения добавьте переменную CORS_ORIGINS с URL вашего GitHub Pages):
-   - Пример: `["https://yourusername.github.io", "https://yourusername.github.io/ai-agent-meta-cognitive"]`
+2. Настройте CORS в бэкенде (в Render или в Docker Compose в переменных окружения добавьте переменную CORS_ORIGINS с URL вашего фронтенда):
+   - Пример: `["https://yourusername.github.io", "https://yourusername.github.io/ai-agent-meta-cognitive", "https://your-frontend-domain.com"]`
 
-3. Пересоберите и разверните фронтенд с новыми настройками
+3. При использовании Docker Compose, сборка фронтенда будет использовать переменную `VITE_API_BASE_URL` из окружения или значение по умолчанию (относительный путь `/api`)
+
+4. Пересоберите и разверните фронтенд с новыми настройками
 
 ## Безопасность
 
