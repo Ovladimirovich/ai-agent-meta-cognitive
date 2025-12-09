@@ -137,19 +137,9 @@ class ApiClient {
   }
 }
 
-// Определение baseUrl в зависимости от окружения
-const getBaseUrl = (): string => {
-  // В production используем относительный путь для проксирования через nginx
-  if (import.meta.env.PROD) {
-    return '/api';
-  }
-  // В development используем переменную окружения или localhost по умолчанию
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-};
-
 // Экземпляр API клиента по умолчанию
 const apiClient = new ApiClient({
-  baseUrl: getBaseUrl()
+  baseUrl: '/api'
 });
 
 export { ApiClient, apiClient };
