@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import CognitiveHealthMonitor from './CognitiveHealthMonitor';
 
@@ -19,7 +18,7 @@ describe('CognitiveHealthMonitor', () => {
 
   test('renders with provided health data', async () => {
     render(<CognitiveHealthMonitor initialData={mockData} />);
-    
+
     // Wait for loading to complete
     await waitFor(() => {
       expect(screen.queryByText('Загрузка монитора когнитивного здоровья...')).not.toBeInTheDocument();
@@ -32,7 +31,7 @@ describe('CognitiveHealthMonitor', () => {
 
   test('renders all cognitive metrics', async () => {
     render(<CognitiveHealthMonitor initialData={mockData} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка монитора когнитивного здоровья...')).not.toBeInTheDocument();
     });
@@ -47,7 +46,7 @@ describe('CognitiveHealthMonitor', () => {
 
   test('displays correct metric values', async () => {
     render(<CognitiveHealthMonitor initialData={mockData} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка монитора когнитивного здоровья...')).not.toBeInTheDocument();
     });
@@ -73,7 +72,7 @@ describe('CognitiveHealthMonitor', () => {
 
   test('displays overall health status', async () => {
     render(<CognitiveHealthMonitor initialData={mockData} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка монитора когнитивного здоровья...')).not.toBeInTheDocument();
     });
@@ -84,7 +83,7 @@ describe('CognitiveHealthMonitor', () => {
 
   test('displays recommendations based on health data', async () => {
     render(<CognitiveHealthMonitor initialData={mockData} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка монитора когнитивного здоровья...')).not.toBeInTheDocument();
     });

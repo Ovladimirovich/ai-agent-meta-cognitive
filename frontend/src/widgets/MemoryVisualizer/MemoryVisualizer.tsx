@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Sphere, Line, Text, Html, Float } from '@react-three/drei';
+import { OrbitControls, Line, Html, Float, Sphere } from '@react-three/drei';
 import { useQuery } from '@tanstack/react-query';
-// Удаляем неиспользуемый импорт
 import * as THREE from 'three';
 
 // Определение типов
@@ -137,7 +136,7 @@ const MemoryLink3D: React.FC<{
   sourceNode: MemoryNode | undefined;
   targetNode: MemoryNode | undefined;
   isHighlighted: boolean;
-}> = ({ link, sourceNode, targetNode, isHighlighted }) => {
+}> = ({ sourceNode, targetNode, isHighlighted }) => {
   if (!sourceNode || !targetNode) return null;
 
   const sourcePos: [number, number, number] = [
@@ -151,11 +150,6 @@ const MemoryLink3D: React.FC<{
     targetNode.y || 0,
     targetNode.z || 0
   ];
-
-  // Рассчитываем вектор направления
-  const direction = new THREE.Vector3(...targetPos).sub(new THREE.Vector3(...sourcePos));
-  const length = direction.length();
-  const midpoint = new THREE.Vector3(...sourcePos).add(direction.clone().multiplyScalar(0.5));
 
   return (
     <Line
@@ -206,7 +200,7 @@ const MemoryScene3D: React.FC<{
       ))}
 
       {/* Связи */}
-      {memoryData.links.map((link, index) => {
+      {memoryData.links.map((link) => {
         const sourceNode = memoryData.nodes.find(n => n.id === link.source);
         const targetNode = memoryData.nodes.find(n => n.id === link.target);
 
@@ -240,7 +234,6 @@ const MemoryScene3D: React.FC<{
 const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({ className = '' }) => {
   const [selectedNode, setSelectedNode] = useState<MemoryNode | null>(null);
   const [highlightNodes, setHighlightNodes] = useState<Set<string>>(new Set());
-  const [highlightLinks, setHighlightLinks] = useState<Set<string>>(new Set());
 
   // Получение данных о памяти с использованием React Query
   const { data: memoryData, isLoading, isError, refetch, isRefetching } = useQuery<MemoryData>({
@@ -333,7 +326,6 @@ const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({ className = '' }) =
       });
 
       setHighlightNodes(connectedNodes);
-      setHighlightLinks(connectedLinks);
     }
   }, [memoryData]);
 
@@ -361,7 +353,6 @@ const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({ className = '' }) =
 
     // Сброс подсветки при обновлении данных
     setHighlightNodes(new Set());
-    setHighlightLinks(new Set());
     setSelectedNode(null);
   }, [memoryData]);
 

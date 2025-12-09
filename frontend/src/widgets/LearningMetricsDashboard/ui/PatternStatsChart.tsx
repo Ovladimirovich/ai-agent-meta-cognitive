@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -46,9 +45,9 @@ export const PatternStatsChart: React.FC<PatternStatsChartProps> = ({ data }) =>
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="patternType" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 12 }}/>
-            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" tick={{ fontSize: 12 }}/>
-            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" tick={{ fontSize: 12 }}/>
+            <XAxis dataKey="patternType" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 12 }} />
+            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" tick={{ fontSize: 12 }} />
+            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" tick={{ fontSize: 12 }} />
             <Tooltip
               formatter={(value, name) => {
                 if (name === 'count') return [value, 'Количество'];
@@ -64,9 +63,9 @@ export const PatternStatsChart: React.FC<PatternStatsChartProps> = ({ data }) =>
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             />
-            <Legend wrapperStyle={{ paddingTop: '10px' }}/>
+            <Legend wrapperStyle={{ paddingTop: '10px' }} />
             <Bar yAxisId="left" dataKey="count" name="Количество" fill="#8884d8">
-              {data.map((entry, index) => (
+              {data.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Bar>
@@ -75,13 +74,13 @@ export const PatternStatsChart: React.FC<PatternStatsChartProps> = ({ data }) =>
           </ComposedChart>
         </div>
       </div>
-      
+
       <div className="h-80" style={{ height: '320px' }}>
         <div style={{ width: '100%', height: '320px' }}>
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
             <PolarGrid />
-            <PolarAngleAxis dataKey="patternType" tick={{ fontSize: 12 }}/>
-            <PolarRadiusAxis tick={{ fontSize: 12 }}/>
+            <PolarAngleAxis dataKey="patternType" tick={{ fontSize: 12 }} />
+            <PolarRadiusAxis tick={{ fontSize: 12 }} />
             <Radar
               name="Уровень успеха"
               dataKey="successRate"
@@ -110,7 +109,7 @@ export const PatternStatsChart: React.FC<PatternStatsChartProps> = ({ data }) =>
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             />
-            <Legend wrapperStyle={{ paddingTop: '10px' }}/>
+            <Legend wrapperStyle={{ paddingTop: '10px' }} />
           </RadarChart>
         </div>
       </div>

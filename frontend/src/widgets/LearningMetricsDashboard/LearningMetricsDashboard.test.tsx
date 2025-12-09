@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import LearningMetricsDashboard from './LearningMetricsDashboard';
 import { LearningMetrics } from './types';
 import { PerformanceChart } from './ui/PerformanceChart';
@@ -47,7 +47,7 @@ jest.mock('recharts', () => ({
 
 // Мок хука useLearningMetrics
 jest.mock('./hooks/useLearningMetrics', () => ({
-  useLearningMetrics: (timeframe = '7d', taskType = 'all') => ({
+  useLearningMetrics: () => ({
     data: mockMetrics,
     loading: false,
     error: null,
@@ -58,35 +58,35 @@ jest.mock('./hooks/useLearningMetrics', () => ({
 describe('LearningMetricsDashboard', () => {
   test('отображает основные метрики', () => {
     render(<LearningMetricsDashboard />);
-    
+
     expect(screen.getByText('Общий опыт')).toBeInTheDocument();
     expect(screen.getByText('150')).toBeInTheDocument();
-    
+
     expect(screen.getByText('Средняя скорость обучения')).toBeInTheDocument();
     expect(screen.getByText('5.30%')).toBeInTheDocument();
-    
+
     expect(screen.getByText('Улучшение навыков')).toBeInTheDocument();
     expect(screen.getByText('12.50%')).toBeInTheDocument();
-    
+
     expect(screen.getByText('Мета-когнитивное осознание')).toBeInTheDocument();
     expect(screen.getByText('78.00%')).toBeInTheDocument();
   });
 
- test('отображает элементы управления', () => {
+  test('отображает элементы управления', () => {
     render(<LearningMetricsDashboard />);
-    
+
     expect(screen.getByText('Временной диапазон:')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /временной диапазон/i })).toBeInTheDocument();
-    
+
     expect(screen.getByText('Тип задачи:')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /тип задачи/i })).toBeInTheDocument();
-    
+
     expect(screen.getByRole('button', { name: /обновить/i })).toBeInTheDocument();
   });
 
   test('отображает все три графика', () => {
     render(<LearningMetricsDashboard />);
-    
+
     expect(screen.getByText('Производительность')).toBeInTheDocument();
     expect(screen.getByText('Статистика паттернов')).toBeInTheDocument();
     expect(screen.getByText('Тренды адаптации')).toBeInTheDocument();
@@ -94,11 +94,11 @@ describe('LearningMetricsDashboard', () => {
 
   test('проверяет функциональность селектов', () => {
     render(<LearningMetricsDashboard />);
-    
+
     const timeframeSelect = screen.getByRole('combobox', { name: /временной диапазон/i });
     fireEvent.change(timeframeSelect, { target: { value: '30d' } });
     expect(timeframeSelect).toHaveValue('30d');
-    
+
     const taskTypeSelect = screen.getByRole('combobox', { name: /тип задачи/i });
     fireEvent.change(taskTypeSelect, { target: { value: 'analytical' } });
     expect(taskTypeSelect).toHaveValue('analytical');
@@ -106,9 +106,9 @@ describe('LearningMetricsDashboard', () => {
 
   test('проверяет вызов функции обновления', () => {
     const mockRefresh = jest.fn();
-    
+
     render(<LearningMetricsDashboard />);
-    
+
     const refreshButton = screen.getByRole('button', { name: /обновить/i });
     fireEvent.click(refreshButton);
     expect(mockRefresh).toHaveBeenCalledTimes(1);
@@ -118,14 +118,14 @@ describe('LearningMetricsDashboard', () => {
 describe('PerformanceChart', () => {
   test('рендерит линейный график с данными производительности', () => {
     render(<PerformanceChart data={mockMetrics.performanceData} />);
-    
+
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
     expect(screen.getAllByTestId('line')).toHaveLength(5); // accuracy, efficiency, speed, confidence, task_complexity
   });
 
   test('работает с пустыми данными', () => {
     render(<PerformanceChart data={[]} />);
-    
+
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
   });
 });
@@ -133,14 +133,14 @@ describe('PerformanceChart', () => {
 describe('PatternStatsChart', () => {
   test('рендерит столбчатый график с данными статистики паттернов', () => {
     render(<PatternStatsChart data={mockMetrics.patternStats} />);
-    
+
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
     expect(screen.getAllByTestId('bar')).toHaveLength(3); // count, successRate, avgExecutionTime
   });
 
   test('работает с пустыми данными', () => {
     render(<PatternStatsChart data={[]} />);
-    
+
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 });
@@ -148,7 +148,7 @@ describe('PatternStatsChart', () => {
 describe('AdaptationTrendsChart', () => {
   test('рендерит составной график с данными трендов адаптации', () => {
     render(<AdaptationTrendsChart data={mockMetrics.adaptationTrends} />);
-    
+
     expect(screen.getByTestId('composed-chart')).toBeInTheDocument();
     expect(screen.getByTestId('area')).toBeInTheDocument();
     expect(screen.getByTestId('line')).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe('AdaptationTrendsChart', () => {
 
   test('работает с пустыми данными', () => {
     render(<AdaptationTrendsChart data={[]} />);
-    
+
     expect(screen.getByTestId('composed-chart')).toBeInTheDocument();
- });
+  });
 });

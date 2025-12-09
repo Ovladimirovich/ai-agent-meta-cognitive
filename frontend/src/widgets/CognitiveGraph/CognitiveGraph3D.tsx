@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Sphere, Line, Text, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Типы для когнитивного графа
@@ -59,7 +59,7 @@ const CognitiveNode3D: React.FC<{
   const nodeColors: Record<CognitiveNode['type'], string> = {
     belief: '#3b82f6',      // blue
     knowledge: '#8b5cf6',   // violet
-    experience: '#ec489',  // pink
+    experience: '#ec4899',  // pink
     context: '#10b981',     // emerald
     emotion: '#f59e0b',     // amber
     goal: '#ef4444'         // red
@@ -86,26 +86,24 @@ const CognitiveNode3D: React.FC<{
         onClick(node);
       }}
     >
-      <Sphere
-        ref={meshRef}
-        args={[size, 16, 16]}
-      >
-        <meshStandardMaterial 
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[size, 16]} />
+        <meshStandardMaterial
           color={isSelected ? '#fbbf24' : isHighlighted ? '#60a5fa' : nodeColors[node.type]}
-          emissive={hovered ? '#ffffff' : '#0000'}
+          emissive={hovered ? '#ffffff' : '#000'}
           emissiveIntensity={hovered ? 0.2 : 0}
           opacity={0.85}
           transparent
         />
-      </Sphere>
-      
+      </mesh>
+
       {/* Подпись узла при наведении */}
       {hovered && (
         <Html
           position={[0, size + 0.2, 0]}
           center
           distanceFactor={5}
-          style={{ 
+          style={{
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             color: 'white',
             padding: '6px 10px',
@@ -147,42 +145,27 @@ const CognitiveLink3D: React.FC<{
   // Толщина линии в зависимости от силы связи
   const lineWidth = 0.5 + (link.strength * 1.5);
 
-  // Создаем геометрию для стрелки
-  const direction = new THREE.Vector3(...targetPos).sub(new THREE.Vector3(...sourcePos));
-  const length = direction.length();
-  const midpoint = new THREE.Vector3(...sourcePos).add(direction.clone().multiplyScalar(0.5));
-
-  // Вектор вверх для ориентации стрелки
-  const up = new THREE.Vector3(0, 1, 0);
-  
-  // Вычисляем ориентацию стрелки
-  const arrowDirection = direction.clone().normalize();
-  const arrowLength = 0.3;
-  
-  // Создаем стрелку для направления связи
-  const arrowStart = new THREE.Vector3(...targetPos).sub(arrowDirection.clone().multiplyScalar(arrowLength));
-  const arrowPoints = [arrowStart.toArray(), targetPos] as const;
+  // Создаем геометрию для линии
+  const points = [sourcePos, targetPos] as const;
 
   return (
-    <group>
-      {/* Основная линия связи */}
-      <Line
-        points={[sourcePos, targetPos]}
+    <line>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={points.length}
+          array={new Float32Array(points.flat())}
+          itemSize={3}
+          args={[new Float32Array(points.flat()), 3]}
+        />
+      </bufferGeometry>
+      <lineBasicMaterial
         color={isHighlighted ? '#fbbf24' : linkColors[link.type]}
-        lineWidth={lineWidth}
+        linewidth={lineWidth}
         transparent
         opacity={0.6}
       />
-      
-      {/* Стрелка для направления связи */}
-      <Line
-        points={arrowPoints}
-        color={isHighlighted ? '#fbbf24' : linkColors[link.type]}
-        lineWidth={lineWidth * 1.5}
-        transparent
-        opacity={0.8}
-      />
-    </group>
+    </line>
   );
 };
 
@@ -195,23 +178,27 @@ const CognitiveGraphScene: React.FC<{
   onNodeHover: (node: CognitiveNode | null) => void;
 }> = ({ data, selectedNode, highlightNodes, onNodeClick, onNodeHover }) => {
   const { camera } = useThree();
-  
+
   // Устанавливаем начальную позицию камеры
   useEffect(() => {
     camera.position.set(15, 15, 15);
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
+  // Создаем сетку для ориентации
+  const grid = React.useMemo(() => new THREE.GridHelper(30, 30, new THREE.Color('#4b5563'), new THREE.Color('#4b5563')), []);
+  grid.position.y = -5;
+
   return (
     <>
       {/* Освещение */}
       <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={0.8} />
-      <pointLight position={[-10, -10, -10]} intensity={0.4} />
-      
+      <pointLight position={[10, 10, 0]} intensity={0.8} />
+      <pointLight position={[-10, -10, 0]} intensity={0.4} />
+
       {/* Сетка для ориентации */}
-      <gridHelper args={[30, 30, '#4b5563', '#4b5563']} position={[0, -5, 0]} />
-      
+      <primitive object={grid} />
+
       {/* Узлы */}
       {data.nodes.map((node) => (
         <CognitiveNode3D
@@ -223,12 +210,12 @@ const CognitiveGraphScene: React.FC<{
           onHover={onNodeHover}
         />
       ))}
-      
+
       {/* Связи */}
       {data.links.map((link) => {
         const sourceNode = data.nodes.find(n => n.id === link.source);
         const targetNode = data.nodes.find(n => n.id === link.target);
-        
+
         return (
           <CognitiveLink3D
             key={`${link.source}-${link.target}`}
@@ -236,7 +223,7 @@ const CognitiveGraphScene: React.FC<{
             sourceNode={sourceNode}
             targetNode={targetNode}
             isHighlighted={
-              (selectedNode && 
+              (selectedNode &&
                 (selectedNode.id === link.source || selectedNode.id === link.target)) ||
               highlightNodes.has(link.source) ||
               highlightNodes.has(link.target)
@@ -244,9 +231,9 @@ const CognitiveGraphScene: React.FC<{
           />
         );
       })}
-      
+
       {/* Управление орбитой */}
-      <OrbitControls 
+      <OrbitControls
         enableDamping
         dampingFactor={0.05}
         minDistance={5}
@@ -256,10 +243,10 @@ const CognitiveGraphScene: React.FC<{
   );
 };
 
-const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({ 
- data, 
-  className = '', 
- onNodeClick,
+const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
+  data,
+  className = '',
+  onNodeClick,
   onNodeHover
 }) => {
   const [selectedNode, setSelectedNode] = useState<CognitiveNode | null>(null);
@@ -269,7 +256,7 @@ const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
   const handleNodeClick = (node: CognitiveNode) => {
     setSelectedNode(node);
     if (onNodeClick) onNodeClick(node);
-    
+
     // Подсвечиваем связанные узлы
     const connectedNodes = new Set<string>([node.id]);
     data.links.forEach(link => {
@@ -282,7 +269,7 @@ const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
   };
 
   // Обработчик наведения на узел
- const handleNodeHover = (node: CognitiveNode | null) => {
+  const handleNodeHover = (node: CognitiveNode | null) => {
     if (node) {
       // Подсвечиваем связанные узлы при наведении
       const connectedNodes = new Set<string>([node.id]);
@@ -296,9 +283,9 @@ const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
     } else {
       setHighlightNodes(new Set());
     }
-    
+
     if (onNodeHover) onNodeHover(node);
- };
+  };
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 ${className}`}>
@@ -320,10 +307,10 @@ const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
                 document.querySelector('.h-96')?.clientHeight || 400
               );
             };
-            
+
             window.addEventListener('resize', handleResize);
             handleResize(); // Инициализация размера
-            
+
             return () => window.removeEventListener('resize', handleResize);
           }}
         >
@@ -378,7 +365,7 @@ const CognitiveGraph3D: React.FC<CognitiveGraph3DProps> = ({
           <span>Цель</span>
         </div>
       </div>
-      
+
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
         <div className="flex items-center">
           <div className="w-4 h-0.5 bg-blue-50 mr-1"></div>

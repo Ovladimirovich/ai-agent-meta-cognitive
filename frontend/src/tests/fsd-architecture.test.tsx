@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LearningAnalyticsPage from '@/pages/LearningAnalytics/LearningAnalyticsPage';
 import LearningMetricsDashboard from '@/widgets/LearningMetricsDashboard/LearningMetricsDashboard';
@@ -116,7 +115,6 @@ describe('FSD Architecture Compliance Tests', () => {
     // или Page -> Widget -> Shared (UI)
 
     // Проверяем, что компоненты используют правильные пути для получения данных
-    const mockMetrics = { performanceData: [], patternStats: [], adaptationTrends: [] };
     const mockTrace = {
       id: 'test',
       steps: [],

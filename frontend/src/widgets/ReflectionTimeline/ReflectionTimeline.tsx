@@ -29,7 +29,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
           setIsLoading(false);
         } else {
           // Запрашиваем данные рефлексии через API
-          const response = await apiClient.query(`
+          const response: any = await apiClient.query(`
             query GetReflectionTimeline($first: Int, $filters: ReflectionFiltersInput) {
               reflectionTimeline(first: $first, filters: $filters) {
                 nodes {
@@ -140,8 +140,8 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
             }
           });
 
-          if (response.data?.reflectionTimeline?.nodes) {
-            setReflections(response.data.reflectionTimeline.nodes);
+          if ((response as any).data?.reflectionTimeline?.nodes) {
+            setReflections((response as any).data.reflectionTimeline.nodes);
           } else {
             // Резервный вариант с mock данными
             const mockReflections: ReflectionEvent[] = [
@@ -350,7 +350,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
           setIsLoading(false);
         } else {
           // Запрашиваем данные рефлексии через API
-          const response = await apiClient.query(`
+          const response: any = await apiClient.query(`
             query GetReflectionTimeline($first: Int, $filters: ReflectionFiltersInput) {
               reflectionTimeline(first: $first, filters: $filters) {
                 nodes {
@@ -461,8 +461,8 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
             }
           });
 
-          if (response.data?.reflectionTimeline?.nodes) {
-            setReflections(response.data.reflectionTimeline.nodes);
+          if ((response as any).data?.reflectionTimeline?.nodes) {
+            setReflections((response as any).data.reflectionTimeline.nodes);
           } else {
             // Резервный вариант с mock данными
             const mockReflections: ReflectionEvent[] = [
@@ -676,7 +676,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
           if (filters.dateRange.end) queryParams.append('end_date', filters.dateRange.end);
           queryParams.append('min_confidence', filters.minConfidence.toString());
 
-          const response = await apiClient.query(`
+          const response: any = await apiClient.query(`
             query GetReflectionTimeline($first: Int, $filters: ReflectionFilters) {
               reflectionTimeline(first: $first, filters: $filters) {
                 nodes {
@@ -788,8 +788,8 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
             }
           });
 
-          if (response.data?.reflectionTimeline?.nodes) {
-            setReflections(response.data.reflectionTimeline.nodes);
+          if ((response as any).data?.reflectionTimeline?.nodes) {
+            setReflections((response as any).data.reflectionTimeline.nodes);
           } else {
             // Резервный вариант с mock данными
             const mockReflections: ReflectionEvent[] = [
@@ -1132,7 +1132,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
 
               <div className="space-y-8">
-                {filteredReflections.map((reflection, index) => (
+                {filteredReflections.map((reflection) => (
                   <div key={reflection.id} className="relative pl-12">
                     {/* Точка на таймлайне */}
                     <div className={`absolute left-0 top-3 w-8 h-8 rounded-full flex items-center justify-center text-white ${getEventTypeColor(reflection.type)} shadow-md cursor-pointer`}
@@ -1198,7 +1198,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{selectedReflection.title}</h3>
+                <h3 className="text-xl font-bold text-gray-80">{selectedReflection.title}</h3>
                 <button onClick={handleCloseDetail} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
               </div>
 
@@ -1227,7 +1227,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
 
                 {selectedReflection.relatedLearning && (
                   <div>
-                    <span className="font-medium text-gray-700">Связанное обучение: </span>
+                    <span className="font-medium text-gray-70">Связанное обучение: </span>
                     <p className="mt-1 text-gray-600">{selectedReflection.relatedLearning}</p>
                   </div>
                 )}
@@ -1259,7 +1259,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                   <h4 className="font-semibold text-gray-800 mb-2">Инсайты:</h4>
                   {selectedReflection.insights.length > 0 ? (
                     <ul className="list-disc pl-5 space-y-1">
-                      {selectedReflection.insights.map((insight, idx) => (
+                      {selectedReflection.insights.map((insight) => (
                         <li key={insight.id} className="text-gray-600">{insight.description}</li>
                       ))}
                     </ul>

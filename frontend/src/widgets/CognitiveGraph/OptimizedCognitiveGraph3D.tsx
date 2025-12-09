@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Line, Text, Html, useTexture } from '@react-three/drei';
+import { OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Типы для когнитивного графа
 interface CognitiveNode {
   id: string;
- label: string;
+  label: string;
   x: number;
   y: number;
   z: number;
@@ -44,7 +44,7 @@ const OptimizedCognitiveNode3D: React.FC<{
   onClick: (node: CognitiveNode) => void;
   onHover: (node: CognitiveNode | null) => void;
 }> = React.memo(({ node, isSelected, isHighlighted, onClick, onHover }) => {
- const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
   // Анимация пульсации для активных узлов
@@ -92,7 +92,7 @@ const OptimizedCognitiveNode3D: React.FC<{
         onClick={(e: any) => e.stopPropagation()}
       >
         <sphereGeometry args={[size, 8, 8]} /> {/* Уменьшено количество сегментов для производительности */}
-        <meshStandardMaterial 
+        <meshStandardMaterial
           color={isSelected ? '#fbbf24' : isHighlighted ? '#60a5fa' : nodeColors[node.type]}
           emissive={hovered ? '#ffffff' : '#0000'}
           emissiveIntensity={hovered ? 0.2 : 0}
@@ -100,14 +100,14 @@ const OptimizedCognitiveNode3D: React.FC<{
           transparent
         />
       </mesh>
-      
+
       {/* Подпись узла при наведении */}
       {hovered && (
         <Html
           position={[0, size + 0.2, 0]}
           center
           distanceFactor={5}
-          style={{ 
+          style={{
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             color: 'white',
             padding: '6px 10px',
@@ -129,7 +129,7 @@ const OptimizedCognitiveNode3D: React.FC<{
 const OptimizedCognitiveLink3D: React.FC<{
   link: CognitiveLink;
   sourceNode: CognitiveNode | undefined;
- targetNode: CognitiveNode | undefined;
+  targetNode: CognitiveNode | undefined;
   isHighlighted: boolean;
 }> = React.memo(({ link, sourceNode, targetNode, isHighlighted }) => {
   if (!sourceNode || !targetNode) return null;
@@ -147,20 +147,17 @@ const OptimizedCognitiveLink3D: React.FC<{
   };
 
   // Толщина линии в зависимости от силы связи
- const lineWidth = 0.5 + (link.strength * 1.5);
+  const lineWidth = 0.5 + (link.strength * 1.5);
 
   // Создаем геометрию для стрелки
   const direction = new THREE.Vector3(...targetPos).sub(new THREE.Vector3(...sourcePos));
-  const length = direction.length();
-  const midpoint = new THREE.Vector3(...sourcePos).add(direction.clone().multiplyScalar(0.5));
 
   // Вычисляем ориентацию стрелки
   const arrowDirection = direction.clone().normalize();
   const arrowLength = 0.3;
-  
+
   // Создаем стрелку для направления связи
   const arrowStart = new THREE.Vector3(...targetPos).sub(arrowDirection.clone().multiplyScalar(arrowLength));
-  const arrowPoints = [arrowStart.toArray(), targetPos] as const;
 
   return (
     <group>
@@ -172,7 +169,7 @@ const OptimizedCognitiveLink3D: React.FC<{
         transparent
         opacity={0.6}
       />
-      
+
       {/* Стрелка для направления связи */}
       <Line
         points={[arrowStart.toArray(), targetPos]}
@@ -187,15 +184,15 @@ const OptimizedCognitiveLink3D: React.FC<{
 
 // Оптимизированная сцена когнитивного графа
 const OptimizedCognitiveGraphScene: React.FC<{
- data: CognitiveGraphData;
+  data: CognitiveGraphData;
   selectedNode: CognitiveNode | null;
   highlightNodes: Set<string>;
   onNodeClick: (node: CognitiveNode) => void;
   onNodeHover: (node: CognitiveNode | null) => void;
   maxNodes: number;
 }> = React.memo(({ data, selectedNode, highlightNodes, onNodeClick, onNodeHover, maxNodes }) => {
- const { camera } = useThree();
-  
+  const { camera } = useThree();
+
   // Устанавливаем начальную позицию камеры
   useEffect(() => {
     camera.position.set(15, 15, 15);
@@ -218,8 +215,8 @@ const OptimizedCognitiveGraphScene: React.FC<{
     };
 
     data.links.forEach(link => {
-      if (nodesToRender.some(node => node.id === link.source) && 
-          nodesToRender.some(node => node.id === link.target)) {
+      if (nodesToRender.some(node => node.id === link.source) &&
+        nodesToRender.some(node => node.id === link.target)) {
         grouped[link.type].push(link);
       }
     });
@@ -233,10 +230,10 @@ const OptimizedCognitiveGraphScene: React.FC<{
       <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} intensity={0.8} />
       <pointLight position={[-10, -10, -10]} intensity={0.4} />
-      
+
       {/* Сетка для ориентации */}
       <gridHelper args={[30, 30, '#4b5563', '#4b563']} position={[0, -5, 0]} />
-      
+
       {/* Узлы */}
       {nodesToRender.map((node) => (
         <OptimizedCognitiveNode3D
@@ -248,14 +245,14 @@ const OptimizedCognitiveGraphScene: React.FC<{
           onHover={onNodeHover}
         />
       ))}
-      
+
       {/* Связи по типам */}
       {Object.entries(linksByType).map(([type, links]) => (
         <group key={type}>
           {links.map((link) => {
             const sourceNode = data.nodes.find(n => n.id === link.source);
             const targetNode = data.nodes.find(n => n.id === link.target);
-            
+
             return (
               <OptimizedCognitiveLink3D
                 key={`${link.source}-${link.target}`}
@@ -263,7 +260,7 @@ const OptimizedCognitiveGraphScene: React.FC<{
                 sourceNode={sourceNode}
                 targetNode={targetNode}
                 isHighlighted={
-                  (selectedNode && 
+                  (selectedNode &&
                     (selectedNode.id === link.source || selectedNode.id === link.target)) ||
                   highlightNodes.has(link.source) ||
                   highlightNodes.has(link.target)
@@ -273,9 +270,9 @@ const OptimizedCognitiveGraphScene: React.FC<{
           })}
         </group>
       ))}
-      
+
       {/* Управление орбитой */}
-      <OrbitControls 
+      <OrbitControls
         enableDamping
         dampingFactor={0.05}
         minDistance={5}
@@ -285,9 +282,9 @@ const OptimizedCognitiveGraphScene: React.FC<{
   );
 });
 
-const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({ 
-  data, 
-  className = '', 
+const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({
+  data,
+  className = '',
   onNodeClick,
   onNodeHover,
   maxNodes = 100  // По умолчанию ограничиваем 100 узлами
@@ -299,7 +296,7 @@ const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({
   const handleNodeClick = (node: CognitiveNode) => {
     setSelectedNode(node);
     if (onNodeClick) onNodeClick(node);
-    
+
     // Подсвечиваем связанные узлы
     const connectedNodes = new Set<string>([node.id]);
     data.links.forEach(link => {
@@ -326,9 +323,9 @@ const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({
     } else {
       setHighlightNodes(new Set());
     }
-    
+
     if (onNodeHover) onNodeHover(node);
- };
+  };
 
   // Отображаем предупреждение, если данных слишком много
   const showWarning = data.nodes.length > maxNodes;
@@ -348,9 +345,9 @@ const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({
       </div>
 
       <div className="h-96 relative">
-        <Canvas 
+        <Canvas
           camera={{ position: [15, 15, 15], fov: 50 }}
-          gl={{ 
+          gl={{
             antialias: true,
             alpha: true,
             powerPreference: "high-performance" // Оптимизация для производительности
@@ -408,7 +405,7 @@ const OptimizedCognitiveGraph3D: React.FC<OptimizedCognitiveGraph3DProps> = ({
           <span>Цель</span>
         </div>
       </div>
-      
+
       <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
         <div className="flex items-center">
           <div className="w-4 h-0.5 bg-blue-500 mr-1"></div>

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ReasoningTrace, ReasoningTraceFilter, ReasoningStep } from '../types';
+import { useState, useCallback } from 'react';
+import { ReasoningTrace, ReasoningTraceFilter } from '../types';
 import { learningApi } from '@/entities/Learning';
 
 export const useReasoningTrace = (initialTrace?: ReasoningTrace) => {
@@ -100,5 +100,5 @@ export const useReasoningTrace = (initialTrace?: ReasoningTrace) => {
     updateTrace,
     filterTrace,
     resetFilters
- };
+  };
 };

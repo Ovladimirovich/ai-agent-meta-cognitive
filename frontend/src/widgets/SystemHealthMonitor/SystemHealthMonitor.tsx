@@ -16,7 +16,7 @@ const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
   const fetchHealthStatus = async () => {
     try {
       setLoading(true);
-      const data = await apiClient.getHealthStatus();
+      const data: any = await apiClient.getHealthStatus();
       setHealthData(data);
       setError(null);
     } catch (err) {

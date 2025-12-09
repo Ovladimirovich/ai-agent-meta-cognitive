@@ -5,7 +5,7 @@ import ReasoningTraceViewer from '@/widgets/ReasoningTraceViewer/ReasoningTraceV
 import { useLearningMetrics } from '@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics';
 
 const LearningAnalyticsPage: React.FC = () => {
-  const { data: metrics, loading, error, refresh } = useLearningMetrics();
+  const { loading, error, refresh } = useLearningMetrics();
 
   if (loading) {
     return (

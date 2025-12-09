@@ -23,14 +23,12 @@ export const AgentDashboard: React.FC = () => {
     sessions,
     currentSessionId,
     createSession,
-    saveSession,
-    loadSession,
     deleteSession,
     setCurrentSession
   } = useChatHistory();
 
   // Загрузка системной информации
-  const { data: systemInfo, isLoading: isSystemInfoLoading } = useQuery({
+  const { data: systemInfo, isLoading: isSystemInfoLoading } = useQuery<any>({
     queryKey: ['systemInfo'],
     queryFn: () => apiClient.getSystemInfo(),
     refetchInterval: 3000, // Обновление каждые 30 секунд
@@ -74,7 +72,7 @@ export const AgentDashboard: React.FC = () => {
                     <span className="text-white font-bold text-sm">AI</span>
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    <h1 className="text-xl font-bold text-gray-90 dark:text-white">
                       Meta-Cognitive AI Agent
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -113,7 +111,7 @@ export const AgentDashboard: React.FC = () => {
 
                   {/* Индикатор состояния бэкенда */}
                   <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${isSystemInfoLoading ? 'bg-yellow-500' : systemInfo ? 'bg-green-600' : 'bg-red-600'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${isSystemInfoLoading ? 'bg-yellow-500' : systemInfo ? 'bg-green-600' : 'bg-red-60'}`}></div>
                     <span>Backend: {isSystemInfoLoading ? 'Проверка...' : systemInfo ? '● Online' : '○ Offline'}</span>
                   </div>
 
@@ -159,7 +157,7 @@ export const AgentDashboard: React.FC = () => {
                 <div className="flex space-x-4">
                   <a href="/docs" className="hover:text-blue-60 dark:hover:text-blue-400">API Docs</a>
                   <a href="/graphql" className="hover:text-blue-600 dark:hover:text-blue-40">GraphQL</a>
-                  <a href="https://github.com" className="hover:text-blue-600 dark:hover:text-blue-400">GitHub</a>
+                  <a href="https://github.com" className="hover:text-blue-60 dark:hover:text-blue-400">GitHub</a>
                 </div>
               </div>
             </div>

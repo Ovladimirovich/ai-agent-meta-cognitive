@@ -121,7 +121,7 @@ export const learningApi = {
         }
       }
     `;
-    const response = await apiClient.query(query, { traceId });
+    const response: any = await apiClient.query(query, { traceId });
     return mapApiToWidgetTypes.mapReasoningTrace(response.data.reasoningTrace);
   },
 
@@ -178,7 +178,7 @@ export const learningApi = {
         }
       }
     `;
-    const response = await apiClient.query(query);
+    const response: any = await apiClient.query(query);
     return response.data.allReasoningTraces.map((trace: any) => mapApiToWidgetTypes.mapReasoningTrace(trace));
   }
 };

@@ -27,10 +27,10 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
 
   // Состояния для зума и панорамирования
   const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
-  const [isZooming, setIsZooming] = useState(false);
+  const [, setIsZooming] = useState(false);
 
   // Обработчики для зума и панорамирования
- const handleZoomStart = () => {
+  const handleZoomStart = () => {
     setIsZooming(true);
   };
 
@@ -50,10 +50,6 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
 
   const handleChartMouseUp = () => {
     handleZoomEnd(null);
-  };
-
-  const handleResetZoom = () => {
-    setZoomDomain(null);
   };
 
   return (
@@ -176,8 +172,8 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => {
             />
             <defs>
               <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
             </defs>
           </LineChart>

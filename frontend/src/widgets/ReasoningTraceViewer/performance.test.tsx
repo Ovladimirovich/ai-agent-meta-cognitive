@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import ReasoningTraceViewer from './ReasoningTraceViewer';
 import { ReasoningTrace } from './types';
@@ -58,33 +57,33 @@ const generateLargeTrace = (stepsCount: number): ReasoningTrace => {
 describe('Performance Tests for Large Datasets', () => {
   test('Performance - ReasoningTraceViewer with 1000 steps', async () => {
     const largeTrace = generateLargeTrace(1000);
-    
+
     const startTime = performance.now();
     render(<ReasoningTraceViewer initialTrace={largeTrace} />);
     const renderTime = performance.now() - startTime;
-    
+
     // Проверяем, что компонент рендерится за разумное время (менее 2 секунд)
     expect(renderTime).toBeLessThan(2000);
-    
+
     // Проверяем, что основные элементы отображаются
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
     }, { timeout: 5000 });
-    
+
     // Проверяем, что отображается количество шагов
     expect(screen.getByText('1000')).toBeInTheDocument(); // Всего шагов
   }, 10000); // Увеличиваем таймаут для теста с большими данными
 
   test('Performance - ReasoningTraceViewer with 5000 steps', async () => {
     const largeTrace = generateLargeTrace(5000);
-    
+
     const startTime = performance.now();
     render(<ReasoningTraceViewer initialTrace={largeTrace} />);
     const renderTime = performance.now() - startTime;
-    
+
     // Для 5000 шагов даем больше времени, но все равно должно быть разумным
     expect(renderTime).toBeLessThan(5000);
-    
+
     // Проверяем, что компонент не падает при больших объемах данных
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
@@ -93,18 +92,18 @@ describe('Performance Tests for Large Datasets', () => {
 
   test('Performance - Memory usage with large dataset', async () => {
     const originalMemory = (global as any).performance?.memory ? (global as any).performance.memory.usedJSHeapSize : 0;
-    
+
     const largeTrace = generateLargeTrace(2000);
     render(<ReasoningTraceViewer initialTrace={largeTrace} />);
-    
+
     // Ждем полной загрузки
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
     });
-    
+
     const memoryAfter = (global as any).performance?.memory ? (global as any).performance.memory.usedJSHeapSize : 0;
     const memoryUsed = memoryAfter - originalMemory;
-    
+
     // Проверяем, что использование памяти в разумных пределах (менее 100MB)
     // Note: В тестовой среде performance.memory может быть недоступен, поэтому делаем условную проверку
     if (originalMemory > 0) {
@@ -114,14 +113,14 @@ describe('Performance Tests for Large Datasets', () => {
 
   test('Performance - ReasoningTraceViewer with 100 steps - rendering time', async () => {
     const trace = generateLargeTrace(100);
-    
+
     const startTime = performance.now();
     render(<ReasoningTraceViewer initialTrace={trace} />);
     const renderTime = performance.now() - startTime;
-    
+
     // Для 100 шагов должно рендериться быстро (менее 500мс)
     expect(renderTime).toBeLessThan(500);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
     });
@@ -131,16 +130,16 @@ describe('Performance Tests for Large Datasets', () => {
     // Тестирование концепции виртуального скроллинга
     // В реальном приложении использовался бы react-window или подобная библиотека
     const veryLargeTrace = generateLargeTrace(1000);
-    
+
     // Измеряем время подготовки данных
     const dataPrepStart = performance.now();
     const trace = veryLargeTrace;
     const dataPrepTime = performance.now() - dataPrepStart;
-    
+
     // Проверяем, что подготовка данных быстрая
     expect(dataPrepTime).toBeLessThan(100);
-    
-    // В реальном приложении с виртуальным скроллингом рендеринг 
+
+    // В реальном приложении с виртуальным скроллингом рендеринг
     // больших объемов данных будет происходить по частям
     expect(trace.steps).toHaveLength(10000);
     expect(trace.summary.total_steps).toBe(100);
@@ -149,17 +148,17 @@ describe('Performance Tests for Large Datasets', () => {
   test('Performance - Component re-rendering with large dataset', async () => {
     const trace1 = generateLargeTrace(1000);
     const trace2 = generateLargeTrace(1500);
-    
+
     const { rerender } = render(<ReasoningTraceViewer initialTrace={trace1} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
     });
-    
+
     const updateStartTime = performance.now();
     rerender(<ReasoningTraceViewer initialTrace={trace2} />);
     const updateTime = performance.now() - updateStartTime;
-    
+
     // Проверяем, что обновление компонента с новыми данными происходит быстро
     expect(updateTime).toBeLessThan(1000);
   }, 10000);
@@ -167,11 +166,11 @@ describe('Performance Tests for Large Datasets', () => {
   test('Performance - Trace filtering with large dataset', async () => {
     const largeTrace = generateLargeTrace(3000);
     render(<ReasoningTraceViewer initialTrace={largeTrace} />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
     });
-    
+
     // В этом тесте мы проверяем, что компонент может обрабатывать
     // большие объемы данных без падения производительности
     // В реальном приложении здесь будет тестирование фильтрации

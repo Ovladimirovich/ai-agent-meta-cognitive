@@ -33,7 +33,7 @@ const AgentChatInterface: React.FC = () => {
 
     try {
       // Вызываем API для обработки запроса
-      const response = await apiClient.processRequest({
+      const response: any = await apiClient.processRequest({
         query: userMessage.content,
         session_id: 'session_123', // В реальном приложении использовать реальный ID сессии
       });

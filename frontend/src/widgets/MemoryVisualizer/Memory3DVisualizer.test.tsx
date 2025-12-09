@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Memory3DVisualizer from './Memory3DVisualizer';
 
@@ -87,7 +86,7 @@ describe('Memory3DVisualizer', () => {
   test('accepts different activeLayer values', () => {
     render(<Memory3DVisualizer memoryData={mockMemoryData} activeLayer="husk" />);
     expect(screen.getByText('Загрузка визуализации памяти...')).toBeInTheDocument();
-    
+
     render(<Memory3DVisualizer memoryData={mockMemoryData} activeLayer="roots" />);
     expect(screen.getByText('Загрузка визуализации памяти...')).toBeInTheDocument();
   });

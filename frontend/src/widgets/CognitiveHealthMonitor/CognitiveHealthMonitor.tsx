@@ -32,10 +32,10 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
   refreshInterval = 5000
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const { cognitiveData, isLoading: isRealtimeLoading } = useRealtimeData();
+  const { cognitiveData } = useRealtimeData();
 
   // Используем React Query для получения данных о здоровье
-  const { data: healthStatus, isLoading, isError, refetch } = useQuery({
+  const { data: healthStatus, isLoading } = useQuery({
     queryKey: ['healthStatus'],
     queryFn: () => apiClient.getHealthStatus(),
     refetchInterval: refreshInterval,

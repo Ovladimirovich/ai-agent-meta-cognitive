@@ -1,7 +1,6 @@
-import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ReasoningTraceViewer from './ReasoningTraceViewer';
-import { ReasoningTrace, ReasoningTraceFilter } from './types';
+import { ReasoningTrace } from './types';
 import TraceList from './components/TraceList';
 import TraceGraph from './components/TraceGraph';
 import TraceFilters from './components/TraceFilters';
@@ -77,7 +76,7 @@ const mockTrace: ReasoningTrace = {
 
 // Мок для react-force-graph-2d
 jest.mock('react-force-graph-2d', () => ({
-  ForceGraph2D: ({ width, height, graphData, nodeLabel, nodeColor, onNodeClick }: any) => (
+  ForceGraph2D: ({ width, height, graphData }: any) => (
     <div data-testid="force-graph" data-width={width} data-height={height}>
       <div data-testid="graph-nodes">{graphData.nodes.length} nodes</div>
       <div data-testid="graph-links">{graphData.links.length} links</div>
@@ -153,8 +152,7 @@ describe('ReasoningTraceViewer', () => {
   });
 
   test('вызывает фильтрацию при изменении фильтров', () => {
-    const mockFilterChange = jest.fn();
-    const { rerender } = render(<ReasoningTraceViewer initialTrace={mockTrace} />);
+    render(<ReasoningTraceViewer initialTrace={mockTrace} />);
 
     // Тестируем, что компонент рендерится корректно
     expect(screen.getByText('Трассировка рассуждений')).toBeInTheDocument();
@@ -172,7 +170,7 @@ describe('ReasoningTraceViewer', () => {
   test('не отображает анализ, если его нет в данных', () => {
     const traceWithoutAnalysis = { ...mockTrace };
     delete traceWithoutAnalysis.analysis;
-    
+
     render(<ReasoningTraceViewer initialTrace={traceWithoutAnalysis} />);
 
     // Проверяем, что секция анализа не отображается
@@ -255,9 +253,8 @@ describe('TraceGraph', () => {
     const mockNodes = [
       { id: '1', label: 'Step 1', type: 'analysis', confidence: 0.85, timestamp: '2024-01-01T10:00:00Z', description: 'Step 1' }
     ];
-    const mockLinks: any[] = [];
 
-    render(<TraceGraph nodes={mockNodes} links={mockLinks} onNodeClick={mockOnNodeClick} />);
+    render(<TraceGraph nodes={mockNodes} links={[]} onNodeClick={mockOnNodeClick} />);
 
     // В данном случае, так как мы мокаем компонент, клик на узел не будет работать как ожидалось
     // Но мы можем проверить, что пропс передан корректно

@@ -2,7 +2,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import LearningAnalyticsPage from '@/pages/LearningAnalytics/LearningAnalyticsPage';
 import { useLearningMetrics } from '@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics';
-import { useReasoningTrace } from '@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace';
 
 // Мок для хука useLearningMetrics
 jest.mock('@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics', () => ({
@@ -15,7 +14,7 @@ jest.mock('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace', () => ({
 }));
 
 // Мок для компонентов
-jest.mock('@/widgets/LearningMetricsDashboard/LearningMetricsDashboard', () => ({
+jest.mock('@/widgets/LearningMetricsDashboard', () => ({
   default: ({ metrics }: { metrics: any }) => (
     <div data-testid="learning-metrics-dashboard" data-metrics={JSON.stringify(metrics || {})}>
       <h3>Learning Metrics Dashboard</h3>
@@ -111,7 +110,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
@@ -157,7 +156,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: null,
       filteredTrace: null,
       loading: true,
@@ -185,7 +184,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
@@ -220,7 +219,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: null,
       filteredTrace: null,
       loading: false,
@@ -255,7 +254,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: mockRefresh
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: null,
       filteredTrace: null,
       loading: false,
@@ -288,7 +287,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
@@ -325,13 +324,13 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
       error: null,
       loadTrace: jest.fn(),
-      updateTrace: jest.fn((trace) => { }),
+      updateTrace: jest.fn(() => { }),
       filterTrace: jest.fn(),
       resetFilters: jest.fn()
     });
@@ -379,7 +378,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
@@ -419,7 +418,7 @@ describe('Visualization Components E2E Tests', () => {
       refresh: jest.fn()
     });
 
-    (useReasoningTrace as jest.Mock).mockReturnValue({
+    (require('@/widgets/ReasoningTraceViewer/hooks/useReasoningTrace').useReasoningTrace as jest.Mock).mockReturnValue({
       trace: mockReasoningTrace,
       filteredTrace: null,
       loading: false,
