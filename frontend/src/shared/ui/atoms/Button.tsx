@@ -1,27 +1,28 @@
 import React from 'react';
-import { cn } from '../../../shared/lib/utils';
+import { cn } from '@/shared/lib/utils';
 
 // Типы для пропсов кнопки
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
+  variant?: 'default' | 'primary' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   loading?: boolean;
 }
 
 // Компонент кнопки
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ 
-    className = '', 
-    variant = 'default', 
-    size = 'default', 
-    loading = false, 
-    children, 
+  ({
+    className = '',
+    variant = 'default',
+    size = 'default',
+    loading = false,
+    children,
     disabled,
-    ...props 
+    ...props
   }, ref) => {
     // Определяем стили в зависимости от варианта
     const variantClasses = {
       default: 'bg-primary-500 text-white hover:bg-primary-600',
+      primary: 'bg-blue-600 text-white hover:bg-blue-700',
       secondary: 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600',
       destructive: 'bg-state-error text-white hover:bg-state-error/90',
       outline: 'border border-gray-300 dark:border-gray-600 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-700',
