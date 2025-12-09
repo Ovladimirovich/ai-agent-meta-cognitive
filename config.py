@@ -94,9 +94,10 @@ class Config:
         # ================================
         # Используем порт от Render.com или Heroku, если доступен
         self.api_host = os.getenv("API_HOST", "0.0.0.0")
+        # Render.com всегда предоставляет переменную PORT
         self.api_port = int(os.getenv("PORT", "8000"))  # Render.com использует переменную PORT
-        self.api_workers = int(os.getenv("API_WORKERS", "4"))
-        self.api_reload = os.getenv("API_RELOAD", "true").lower() == "true"
+        self.api_workers = int(os.getenv("API_WORKERS", "1"))  # Для Render используем 1 воркер
+        self.api_reload = os.getenv("API_RELOAD", "false").lower() == "true"  # Для продакшена reload = false
 
         # ================================
         # CORS Settings

@@ -19,7 +19,7 @@ ARG REQUIREMENTS_FILE=requirements-render.txt
 ENV REQUIREMENTS_FILE=${REQUIREMENTS_FILE}
 
 # Экспортируем порт, который будет использоваться
-EXPOSE $PORT 8000
+EXPOSE $PORT
 
 # Устанавливаем зависимости
 RUN pip install --upgrade pip && \
@@ -32,7 +32,7 @@ COPY . .
 RUN chmod +x /app/run_frontend_simple.bat /app/run_frontend.bat /app/run_frontend.ps1
 
 # Экспортируем порт, который будет использоваться
-EXPOSE $PORT 8000
+EXPOSE $PORT
 
 # Команда для запуска приложения
-CMD ["sh", "-c", "uvicorn api.main:app --host=0.0.0.0 --port=${PORT:-8000} --workers 4"]
+CMD ["sh", "-c", "uvicorn api.main:app --host=0.0.0.0 --port=${PORT:-8000} --workers 1"]
