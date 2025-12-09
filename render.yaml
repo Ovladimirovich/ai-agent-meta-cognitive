@@ -3,7 +3,7 @@ services:
     name: ai-agent-backend
     runtime: python
     buildCommand: pip install --no-cache-dir -r requirements-render.txt
-    startCommand: uvicorn api.main:app --host=0.0.0.0 --port=$PORT --workers 1
+    startCommand: python -c "import os; os.environ['PORT'] = os.environ.get('PORT', '10000'); from api.main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=int(os.environ['PORT']))"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
