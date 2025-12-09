@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/shared/lib/apiClient';
 
-interface HealthStatus {
-  status: string;
-  health_score: number;
-  issues_count: number;
-  last_check: string;
-  details: Record<string, any>;
-}
 
 interface SystemHealthMonitorProps {
   pollingInterval?: number;
@@ -16,7 +9,7 @@ interface SystemHealthMonitorProps {
 const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
   pollingInterval = 3000 // 30 секунд по умолчанию
 }) => {
-  const [healthData, setHealthData] = useState<HealthStatus | null>(null);
+  const [healthData, setHealthData] = useState<import('@/shared/types/api').HealthStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,7 +88,7 @@ const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
           <div className="flex items-center">
             <div className={`w-3 h-3 rounded-full mr-2 ${getStatusBg(healthData.status)}`}></div>
             <span className={`font-medium ${getStatusColor(healthData.status)}`}>
-              Статус: {healthData.status === 'healthy' ? 'Здоров' : healthData.status === 'degraded' ? 'Деградированный' : 'Нездоровый'}
+              Статус: {healthData.status === 'healthy' ? 'Здоров' : healthData.status === 'warning' ? 'Предупреждение' : healthData.status === 'error' ? 'Ошибка' : 'Нездоровый'}
             </span>
           </div>
 

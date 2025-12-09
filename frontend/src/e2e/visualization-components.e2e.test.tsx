@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import LearningAnalyticsPage from '@/pages/LearningAnalytics/LearningAnalyticsPage';
@@ -332,7 +331,7 @@ describe('Visualization Components E2E Tests', () => {
       loading: false,
       error: null,
       loadTrace: jest.fn(),
-      updateTrace: jest.fn((trace) => {}),
+      updateTrace: jest.fn((trace) => { }),
       filterTrace: jest.fn(),
       resetFilters: jest.fn()
     });

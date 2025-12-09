@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/shared/ui/atoms/Button';
 import { apiClient } from '@/shared/lib/apiClient';
 import { AgentRequest, AgentResponse } from '@/shared/types/api';
-import { useChatHistory } from '@/shared/hooks/useChatHistory';
+// Удаляем неиспользуемый импорт
 import { ChatMessage } from '@/shared/types/chat';
 import { useQueryClient } from '@tanstack/react-query';
 import DOMPurify from 'dompurify';
@@ -139,8 +139,8 @@ export const AgentChatInterface: React.FC<AgentChatInterfaceProps> = ({
           >
             <div
               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.type === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
                 }`}
             >
               <p className="text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />

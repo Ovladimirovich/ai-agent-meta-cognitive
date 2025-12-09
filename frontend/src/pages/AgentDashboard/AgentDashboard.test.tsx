@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { AgentDashboard } from './AgentDashboard';
 
@@ -22,10 +21,10 @@ jest.mock('../../widgets/CognitiveHealthMonitor/CognitiveHealthMonitor', () => (
 describe('AgentDashboard', () => {
   test('renders all main components', () => {
     render(<AgentDashboard />);
-    
+
     expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
     expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
-    
+
     // Проверяем, что все интегрированные компоненты отображаются
     expect(screen.getByTestId('cognitive-health-monitor')).toBeInTheDocument();
     expect(screen.getByTestId('memory-visualizer')).toBeInTheDocument();
@@ -35,7 +34,7 @@ describe('AgentDashboard', () => {
 
   test('renders header with correct information', () => {
     render(<AgentDashboard />);
-    
+
     expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
     expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
     expect(screen.getByText('Backend:')).toBeInTheDocument();
@@ -44,7 +43,7 @@ describe('AgentDashboard', () => {
 
   test('renders footer with correct information', () => {
     render(<AgentDashboard />);
-    
+
     expect(screen.getByText('© 2025 Meta-Cognitive AI Agent. Построено с использованием React & FastAPI.')).toBeInTheDocument();
     expect(screen.getByText('API Docs')).toBeInTheDocument();
     expect(screen.getByText('GraphQL')).toBeInTheDocument();
@@ -53,11 +52,11 @@ describe('AgentDashboard', () => {
 
   test('has correct layout structure', () => {
     render(<AgentDashboard />);
-    
+
     // Проверяем, что компоненты находятся внутри сетки
     const cognitiveHealthMonitor = screen.getByTestId('cognitive-health-monitor');
     const memoryVisualizer = screen.getByTestId('memory-visualizer');
-    
+
     expect(cognitiveHealthMonitor).toBeInTheDocument();
     expect(memoryVisualizer).toBeInTheDocument();
   });

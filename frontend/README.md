@@ -1,46 +1,78 @@
-# Getting Started with Create React App
+# AI Agent Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend часть мета-когнитивного AI агента с визуализацией и интерактивными компонентами.
 
-## Available Scripts
+## Особенности
 
-In the project directory, you can run:
+- Интерактивная визуализация когнитивных процессов
+- Реал-тайм мониторинг состояния агента
+- Графы рассуждений и трассировки
+- Адаптивный интерфейс с поддержкой тем
 
-### `npm start`
+## Требования
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- Node.js 18+
+- npm или yarn
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Установка
 
-### `npm test`
+```bash
+# Установка зависимостей
+npm install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Запуск в режиме разработки
+npm run dev
 
-### `npm run build`
+# Сборка проекта
+npm run build
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Запуск тестов
+npm run test
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Структура проекта (Feature-Sliced Design)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- `app/` - Входная точка приложения
+- `shared/` - Переиспользуемые компоненты и утилиты
+- `entities/` - Бизнес-сущности
+- `features/` - Функциональные возможности
+- `widgets/` - Композиционные компоненты
+- `pages/` - Страницы приложения
 
-### `npm run eject`
+## Развертывание на GitHub Pages
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Проект настроен для автоматического развертывания на GitHub Pages через GitHub Actions.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Убедитесь, что в репозитории включена GitHub Pages
+2. Настройте ветку `gh-pages` как источник публикации
+3. При пуше в ветку `main` автоматически запустится workflow, который соберет проект и опубликует его
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Адрес публикации: `https://<username>.github.io/<repository-name>/`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Переменные окружения
 
-## Learn More
+Создайте файл `.env.local` для настройки API:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+VITE_API_URL=http://localhost:8000
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Сборка для продакшена
+
+```bash
+npm run build
+```
+
+Результаты сборки будут находиться в папке `dist/`.
+
+## Тестирование
+
+```bash
+# Запуск всех тестов
+npm run test
+
+# Запуск тестов в watch-режиме
+npm run test:watch
+
+# Генерация coverage отчета
+npm run test:coverage

@@ -22,19 +22,19 @@ export class ImportExportService {
         data
       };
 
-      const content = options.format === 'json' 
+      const content = options.format === 'json'
         ? JSON.stringify(exportData, null, 2)
         : this.convertToFormat(exportData, options.format);
 
       const blob = new Blob([content], { type: this.getMimeType(options.format) });
       const url = URL.createObjectURL(blob);
-      
+
       const a = document.createElement('a');
       a.href = url;
       a.download = this.generateFileName(type, options);
       document.body.appendChild(a);
       a.click();
-      
+
       // Очистка
       setTimeout(() => {
         document.body.removeChild(a);
@@ -129,17 +129,17 @@ export class ImportExportService {
     // Простая реализация конвертации в CSV
     if (Array.isArray(data)) {
       if (data.length === 0) return '';
-      
+
       const headers = Object.keys(data[0]);
-      const rows = data.map((item: any) => 
-        headers.map(header => 
+      const rows = data.map((item: any) =>
+        headers.map(header =>
           `"${String(item[header] || '').replace(/"/g, '""')}"`
         ).join(',')
       );
-      
+
       return [headers.join(','), ...rows].join('\n');
     }
-    
+
     // Для одиночных объектов
     return Object.entries(data)
       .map(([key, value]) => `"${key}","${value}"`)
@@ -155,7 +155,7 @@ export class ImportExportService {
     requiredFields?: string[]
   ): { valid: boolean; errors?: string[] } {
     const errors: string[] = [];
-    
+
     if (!data) {
       return { valid: false, errors: ['NO_DATA'] };
     }
@@ -176,4 +176,4 @@ export class ImportExportService {
 }
 
 // Экспортируем экземпляр сервиса для удобства использования
-export const importExportService = new ImportExportService();
+// Удаляем экземпляр, так как все методы статические

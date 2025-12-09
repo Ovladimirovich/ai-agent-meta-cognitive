@@ -6,6 +6,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   variant?: 'default' | 'primary' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   loading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 // Компонент кнопки
@@ -17,6 +19,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     loading = false,
     children,
     disabled,
+    leftIcon,
+    rightIcon,
     ...props
   }, ref) => {
     // Определяем стили в зависимости от варианта
@@ -60,7 +64,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             Загрузка...
           </>
         ) : (
-          children
+          <>
+            {leftIcon && <span className="mr-2">{leftIcon}</span>}
+            {children}
+            {rightIcon && <span className="ml-2">{rightIcon}</span>}
+          </>
         )}
       </button>
     );

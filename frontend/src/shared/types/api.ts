@@ -51,6 +51,7 @@ export interface HealthStatus {
   health_score: number;
   issues_count: number;
   last_check: string;
+  details?: Record<string, any>;
 }
 
 // Типы для метрик обучения

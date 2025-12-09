@@ -10,17 +10,20 @@ import { CalendarRange, RotateCcw } from 'lucide-react';
 
 interface LearningMetricsDashboardProps {
   initialTimeframe?: string;
- initialTaskType?: string;
+  initialTaskType?: string;
+  metrics?: LearningMetrics; // Добавляем возможность передачи метрик напрямую для тестов
 }
 
 const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
   initialTimeframe = '7d',
-  initialTaskType = 'all'
+  initialTaskType = 'all',
+  metrics
 }) => {
- const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
+  const [timeframe, setTimeframe] = useState<string>(initialTimeframe);
   const [taskType, setTaskType] = useState<string>(initialTaskType);
-  
-  const { data, loading, error, refresh } = useLearningMetrics(timeframe, taskType);
+
+  const { data: hookData, loading, error, refresh } = useLearningMetrics(timeframe, taskType);
+  const displayData = metrics || hookData;
 
   if (loading) {
     return (
@@ -34,6 +37,15 @@ const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-red-500">Ошибка загрузки метрик: {error}</div>
+      </div>
+    );
+  }
+
+  // Проверяем, есть ли данные для отображения
+  if (!displayData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Нет данных для отображения</div>
       </div>
     );
   }
@@ -57,7 +69,7 @@ const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
             <option value="all">Все время</option>
           </select>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <span className="font-medium">Тип задачи:</span>
           <select
@@ -72,13 +84,13 @@ const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
             <option value="research">Исследовательские</option>
           </select>
         </div>
-        
+
         <Button onClick={refresh} variant="outline" className="flex items-center gap-2">
           <RotateCcw className="w-4 h-4" />
           Обновить
         </Button>
       </div>
-      
+
       {/* Основные метрики */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card>
@@ -86,38 +98,38 @@ const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
             <CardTitle className="text-sm font-medium">Общий опыт</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.totalExperiences}</div>
+            <div className="text-2xl font-bold">{displayData.totalExperiences}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Средняя скорость обучения</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.averageLearningRate.toFixed(2)}%</div>
+            <div className="text-2xl font-bold">{displayData.averageLearningRate.toFixed(2)}%</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Улучшение навыков</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.skillImprovementRate.toFixed(2)}%</div>
+            <div className="text-2xl font-bold">{displayData.skillImprovementRate.toFixed(2)}%</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Мета-когнитивное осознание</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.metaCognitiveAwareness.toFixed(2)}%</div>
+            <div className="text-2xl font-bold">{displayData.metaCognitiveAwareness.toFixed(2)}%</div>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Графики */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
@@ -125,25 +137,25 @@ const LearningMetricsDashboard: React.FC<LearningMetricsDashboardProps> = ({
             <CardTitle>Производительность</CardTitle>
           </CardHeader>
           <CardContent>
-            <PerformanceChart data={data.performanceData} />
+            <PerformanceChart data={displayData.performanceData} />
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Статистика паттернов</CardTitle>
           </CardHeader>
           <CardContent>
-            <PatternStatsChart data={data.patternStats} />
+            <PatternStatsChart data={displayData.patternStats} />
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Тренды адаптации</CardTitle>
           </CardHeader>
           <CardContent>
-            <AdaptationTrendsChart data={data.adaptationTrends} />
+            <AdaptationTrendsChart data={displayData.adaptationTrends} />
           </CardContent>
         </Card>
       </div>

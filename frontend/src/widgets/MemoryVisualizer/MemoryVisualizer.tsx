@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Sphere, Line, Text, Html, Float } from '@react-three/drei';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/shared/lib/apiClient';
+// Удаляем неиспользуемый импорт
 import * as THREE from 'three';
 
 // Определение типов

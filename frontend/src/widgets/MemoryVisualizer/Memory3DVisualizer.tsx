@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three-stdlib';
 
 interface MemoryLayer3D {
   // Определение интерфейса для 3D слоя памяти
- nodes: Array<{
+  nodes: Array<{
     id: string;
     position: [number, number, number];
     value: number;
@@ -34,12 +34,12 @@ const Memory3DVisualizer: React.FC<Memory3DVisualizerProps> = ({
   activeLayer = 'soil',
   className = ''
 }) => {
- const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
- const controlsRef = useRef<OrbitControls | null>(null);
- const animationRef = useRef<number>(0);
+  const controlsRef = useRef<any | null>(null);
+  const animationRef = useRef<number>(0);
 
   // Определение цветов для каждого слоя
   const layerColors = {
@@ -90,7 +90,7 @@ const Memory3DVisualizer: React.FC<Memory3DVisualizerProps> = ({
     // Анимационный цикл
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
-      
+
       controls.update();
       renderer.render(scene, camera);
     };
@@ -116,7 +116,7 @@ const Memory3DVisualizer: React.FC<Memory3DVisualizerProps> = ({
     if (!sceneRef.current || !memoryData) return;
 
     // Очистка предыдущей сцены
-    while(sceneRef.current.children.length > 0){
+    while (sceneRef.current.children.length > 0) {
       sceneRef.current.remove(sceneRef.current.children[0]);
     }
 
@@ -141,7 +141,7 @@ const Memory3DVisualizer: React.FC<Memory3DVisualizerProps> = ({
         opacity: 0.8
       });
       const sphere = new THREE.Mesh(geometry, material);
-      
+
       sphere.position.set(...node.position);
       sphere.userData = { id: node.id, value: node.value };
       sceneRef.current!.add(sphere);
@@ -157,13 +157,13 @@ const Memory3DVisualizer: React.FC<Memory3DVisualizerProps> = ({
     layerData.connections.forEach(connection => {
       const fromNode = layerData.nodes.find(n => n.id === connection.from);
       const toNode = layerData.nodes.find(n => n.id === connection.to);
-      
+
       if (fromNode && toNode) {
         const geometry = new THREE.BufferGeometry().setFromPoints([
           new THREE.Vector3(...fromNode.position),
           new THREE.Vector3(...toNode.position)
         ]);
-        
+
         const line = new THREE.Line(geometry, lineMaterial);
         sceneRef.current!.add(line);
       }

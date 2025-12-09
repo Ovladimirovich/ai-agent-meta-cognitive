@@ -2,30 +2,6 @@ import React, { useEffect, useRef, Suspense, lazy, useMemo } from 'react';
 import { GraphNode, GraphLink, BaseNode, BaseLink } from '../types';
 import { getNodeColor, getNodeSize } from '../utils/graphUtils';
 
-// Типы для совместимости с react-force-graph-2d
-type GraphNode = {
-  id: string;
-  label?: string;
-  type?: string;
-  description?: string;
-  confidence?: number;
-  timestamp?: string;
-  data?: Record<string, any>;
-  x?: number;
-  y?: number;
-  vx?: number;
-  vy?: number;
-  fx?: number;
-  fy?: number;
-  [key: string]: any;
-};
-
-type GraphLink = {
-  source: string | number | GraphNode;
-  target: string | number | GraphNode;
-  value?: number;
-  [key: string]: any;
-};
 
 // Тип для пропсов компонента TraceGraph
 interface TraceGraphProps {
@@ -38,14 +14,14 @@ interface TraceGraphProps {
 }
 
 // Динамический импорт с обработкой ошибок
-const ForceGraph2D = lazy(() => 
+const ForceGraph2D = lazy(() =>
   import('react-force-graph-2d')
     .then(module => ({
       default: module.default || (() => null)
     }))
     .catch(error => {
       console.error('Ошибка загрузки react-force-graph-2d:', error);
-      return { 
+      return {
         default: () => (
           <div className="text-red-600 p-4">
             Не удалось загрузить визуализацию графа. Пожалуйста, обновите страницу.
@@ -66,10 +42,10 @@ const TraceGraph: React.FC<TraceGraphProps> = ({
   // Преобразуем узлы и связи в формат, совместимый с react-force-graph-2d
   const { nodes: graphNodes, links: graphLinks } = useMemo(() => {
     // Создаем карту узлов для быстрого доступа
-    const nodesMap = new Map<string, GraphNode>();
-    
+    const nodesMap = new Map<string, any>();
+
     // Создаем узлы
-    const nodesList: GraphNode[] = propNodes.map((node, idx) => {
+    const nodesList: any[] = propNodes.map((node, idx) => {
       const nodeId = node.id || `node-${idx}`;
       const graphNode: GraphNode = {
         ...node,
@@ -82,18 +58,18 @@ const TraceGraph: React.FC<TraceGraphProps> = ({
         color: getNodeColor(node.confidence),
         size: getNodeSize(node.type)
       };
-      
+
       nodesMap.set(nodeId, graphNode);
       return graphNode;
     });
-    
+
     // Создаем связи
-    const linksList: GraphLink[] = propLinks.map((link, idx) => {
-      const source = typeof link.source === 'string' ? link.source : 
-                   (typeof link.source === 'object' && 'id' in link.source ? link.source.id : `source-${idx}`);
-      const target = typeof link.target === 'string' ? link.target : 
-                   (typeof link.target === 'object' && 'id' in link.target ? link.target.id : `target-${idx}`);
-      
+    const linksList: any[] = propLinks.map((link, idx) => {
+      const source = typeof link.source === 'string' ? link.source :
+        (typeof link.source === 'object' && 'id' in link.source ? link.source.id : `source-${idx}`);
+      const target = typeof link.target === 'string' ? link.target :
+        (typeof link.target === 'object' && 'id' in link.target ? link.target.id : `target-${idx}`);
+
       return {
         ...link,
         source,
@@ -102,7 +78,7 @@ const TraceGraph: React.FC<TraceGraphProps> = ({
         color: 'rgba(148, 163, 184, 0.7)'
       } as GraphLink;
     });
-    
+
     return { nodes: nodesList, links: linksList };
   }, [propNodes, propLinks]);
 
@@ -118,9 +94,9 @@ const TraceGraph: React.FC<TraceGraphProps> = ({
     }
   }, [graphNodes, graphLinks]);
 
-  const handleNodeClick = (node: GraphNode) => {
+  const handleNodeClick = (node: any) => {
     if (onNodeClick) {
-      // Удаляем внутренние свойства графа перед передачей наружу
+      // Удаляем внутренние свойства графа передачей наружу
       const { x, y, vx, vy, fx, fy, size, color, ...rest } = node;
       onNodeClick(rest as BaseNode);
     }

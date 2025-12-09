@@ -89,7 +89,7 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
   }, []);
 
   // Если когнитивные данные доступны из WebSocket, используем их
-  const currentHealthData = cognitiveData ? cognitiveData : healthStatus?.details?.cognitiveMetrics || initialData;
+  const currentHealthData = cognitiveData ? cognitiveData : (healthStatus as any)?.details?.cognitiveMetrics || initialData;
 
   // Если нет данных, показываем заглушку
   if (isLoading || !currentHealthData) {

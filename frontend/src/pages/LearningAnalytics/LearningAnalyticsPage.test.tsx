@@ -1,9 +1,7 @@
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import LearningAnalyticsPage from './LearningAnalyticsPage';
 import { useLearningMetrics } from '@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics';
-import LearningMetricsDashboard from '@/widgets/LearningMetricsDashboard/LearningMetricsDashboard';
-import ReasoningTraceViewer from '@/widgets/ReasoningTraceViewer/ReasoningTraceViewer';
+// Удаляем импорты, которые используются только в моках
 
 // Мок для хука useLearningMetrics
 jest.mock('@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics', () => ({

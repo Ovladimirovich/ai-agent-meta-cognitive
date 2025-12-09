@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { importExportService } from '@/shared/importExportService';
-import { Button } from '@/shared/ui/Button';
+import { ImportExportService } from '@/shared/importExportService';
+import { Button } from '@/shared/ui/atoms/Button';
 import { IconFileImport, IconFileExport } from '@tabler/icons-react';
 import { showNotification } from '@/shared/ui/Notifications';
 
@@ -54,7 +54,7 @@ export function ImportExportButtons<T = any>({
 
     try {
       setIsLoading(true);
-      const success = await importExportService.exportData(
+      const success = await ImportExportService.exportData(
         exportData,
         dataType,
         {
@@ -88,7 +88,7 @@ export function ImportExportButtons<T = any>({
 
     try {
       setIsLoading(true);
-      const result = await importExportService.importData<T>(file, {
+      const result = await ImportExportService.importData<T>(file, {
         validateSchema: true,
         requiredFields: importOptions.requiredFields,
       });
@@ -103,7 +103,7 @@ export function ImportExportButtons<T = any>({
         }
 
         onImport?.(result.data);
-        
+
         showNotification({
           title: 'Успех',
           message: 'Данные успешно импортированы',

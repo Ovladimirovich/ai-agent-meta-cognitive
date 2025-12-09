@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 jest.mock('react-force-graph-2d', () => {
   return {
     __esModule: true,
-    ForceGraph2D: (props: any) => {
+    ForceGraph2D: (_props: any) => {
       return 'ForceGraph2D Mock';
     }
   };

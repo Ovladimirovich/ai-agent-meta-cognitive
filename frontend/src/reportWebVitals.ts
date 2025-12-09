@@ -1,13 +1,14 @@
-import { ReportHandler } from 'web-vitals';
+// Удаляем импорт ReportHandler, так как типы не поддерживаются
 
-const reportWebVitals = (onPerfEntry?: ReportHandler) => {
+const reportWebVitals = (onPerfEntry?: any) => {
   if (onPerfEntry && onPerfEntry instanceof Function) {
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(onPerfEntry);
-      getFID(onPerfEntry);
-      getFCP(onPerfEntry);
-      getLCP(onPerfEntry);
-      getTTFB(onPerfEntry);
+    import('web-vitals').then((webVitals: any) => {
+      // Используем напрямую методы из объекта webVitals
+      if (webVitals.getCLS) webVitals.getCLS(onPerfEntry);
+      if (webVitals.getFID) webVitals.getFID(onPerfEntry);
+      if (webVitals.getFCP) webVitals.getFCP(onPerfEntry);
+      if (webVitals.getLCP) webVitals.getLCP(onPerfEntry);
+      if (webVitals.getTTFB) webVitals.getTTFB(onPerfEntry);
     });
   }
 };
