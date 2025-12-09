@@ -78,16 +78,19 @@ Workflow `.github/workflows/frontend-deploy.yml` автоматически ра
 
 ## Настройка взаимодействия фронтенда и бэкенда
 
-После развертывания:
+После развертывания бэкенда на Render.com:
 
 1. Обновите URL бэкенда в фронтенд-приложении:
-   - В файле `frontend/src/shared/lib/apiClient.ts` измените baseUrl на URL вашего бэкенда на Render
-   - Или укажите переменную окружения `VITE_API_BASE_URL` в настройках GitHub Pages (в файле `.env.production`), чтобы она автоматически подставлялась при сборке
-   - Если ваше приложение будет размещено по пути `/ai-agent-meta-cognitive`, убедитесь, что переменная `VITE_API_BASE_URL` учитывает этот путь (например, `/ai-agent-meta-cognitive/api`)
+   - Создайте или измените файл `.env.production` в директории `frontend/` и укажите URL вашего бэкенда на Render.com в переменной `VITE_API_BASE_URL`:
+     ```
+     VITE_API_BASE_URL=https://your-render-app-url.onrender.com/api
+     ```
+   - Для локальной разработки используйте `.env` файл с переменной `VITE_API_BASE_URL=http://localhost:8000/api`
 
-2. Настройте CORS:
-   - В Render в переменных окружения добавьте переменную CORS_ORIGINS с URL вашего GitHub Pages
-   - Пример: `["https://yourusername.github.io", "https://yourusername.github.io/ai_agent_meta_cognitive"]`
+2. Настройте CORS в бэкенде (в Render в переменных окружения добавьте переменную CORS_ORIGINS с URL вашего GitHub Pages):
+   - Пример: `["https://yourusername.github.io", "https://yourusername.github.io/ai-agent-meta-cognitive"]`
+
+3. Пересоберите и разверните фронтенд с новыми настройками
 
 ## Безопасность
 
