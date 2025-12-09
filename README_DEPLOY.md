@@ -82,6 +82,8 @@ Workflow `.github/workflows/frontend-deploy.yml` автоматически ра
 
 1. Обновите URL бэкенда в фронтенд-приложении:
    - В файле `frontend/src/shared/lib/apiClient.ts` измените baseUrl на URL вашего бэкенда на Render
+   - Или укажите переменную окружения `VITE_API_BASE_URL` в настройках GitHub Pages (в файле `.env.production`), чтобы она автоматически подставлялась при сборке
+   - Если ваше приложение будет размещено по пути `/ai-agent-meta-cognitive`, убедитесь, что переменная `VITE_API_BASE_URL` учитывает этот путь (например, `/ai-agent-meta-cognitive/api`)
 
 2. Настройте CORS:
    - В Render в переменных окружения добавьте переменную CORS_ORIGINS с URL вашего GitHub Pages

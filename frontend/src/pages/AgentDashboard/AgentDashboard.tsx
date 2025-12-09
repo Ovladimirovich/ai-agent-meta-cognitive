@@ -155,8 +155,8 @@ export const AgentDashboard: React.FC = () => {
                   © 2025 Meta-Cognitive AI Agent. Построено с использованием React & FastAPI.
                 </div>
                 <div className="flex space-x-4">
-                  <a href="/docs" className="hover:text-blue-60 dark:hover:text-blue-400">API Docs</a>
-                  <a href="/graphql" className="hover:text-blue-600 dark:hover:text-blue-40">GraphQL</a>
+                  <a href="/ai-agent-meta-cognitive/docs" className="hover:text-blue-600 dark:hover:text-blue-400">API Docs</a>
+                  <a href="/ai-agent-meta-cognitive/graphql" className="hover:text-blue-600 dark:hover:text-blue-400">GraphQL</a>
                   <a href="https://github.com" className="hover:text-blue-60 dark:hover:text-blue-400">GitHub</a>
                 </div>
               </div>

@@ -13,7 +13,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ZustandProvider>
         <ThemeProvider>
-          <Router basename="/ai_agent_meta_cognitive">
+          <Router basename="/ai-agent-meta-cognitive">
             <div className="App">
               <nav className="bg-gray-800 text-white p-4">
                 <div className="max-w-7xl mx-auto flex space-x-4">
