@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
-import { apiClient } from '../../../shared/lib/api-client';
-import { ChatMessage } from '../../../shared/types';
+import { apiClient } from '@/shared/lib/apiClient';
+import { ChatMessage } from '@/shared/types/chat';
 
 const AgentChatInterface: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      text: 'Привет! Я мета-когнитивный AI агент. Как я могу вам помочь?',
-      sender: 'agent',
+      content: 'Привет! Я мета-когнитивный AI агент. Как я могу вам помочь?',
+      type: 'agent',
       timestamp: new Date().toISOString(),
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
- const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
 
     // Добавляем сообщение пользователя
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
-      text: inputValue,
-      sender: 'user',
+      content: inputValue,
+      type: 'user',
       timestamp: new Date().toISOString(),
     };
 
@@ -34,14 +34,14 @@ const AgentChatInterface: React.FC = () => {
     try {
       // Вызываем API для обработки запроса
       const response = await apiClient.processRequest({
-        query: userMessage.text,
+        query: userMessage.content,
         session_id: 'session_123', // В реальном приложении использовать реальный ID сессии
       });
 
       const agentMessage: ChatMessage = {
         id: response.id,
-        text: response.content,
-        sender: 'agent',
+        content: response.content,
+        type: 'agent',
         timestamp: response.timestamp,
         confidence: response.confidence,
       };
@@ -49,15 +49,15 @@ const AgentChatInterface: React.FC = () => {
       setMessages(prev => [...prev, agentMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      
+
       // Добавляем сообщение об ошибке
       const errorMessage: ChatMessage = {
         id: `error_${Date.now()}`,
-        text: 'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.',
-        sender: 'agent',
+        content: 'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте еще раз.',
+        type: 'agent',
         timestamp: new Date().toISOString(),
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -70,16 +70,15 @@ const AgentChatInterface: React.FC = () => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.sender === 'user'
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-              }`}
+              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.type === 'user'
+                ? 'bg-primary-500 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                }`}
             >
-              <p>{message.text}</p>
+              <p>{message.content}</p>
               <p className="text-xs opacity-70 mt-1">
                 {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
@@ -91,7 +90,7 @@ const AgentChatInterface: React.FC = () => {
             </div>
           </div>
         ))}
-        
+
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg">
@@ -104,7 +103,7 @@ const AgentChatInterface: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       <form onSubmit={handleSendMessage} className="flex gap-2">
         <input
           type="text"
@@ -123,7 +122,7 @@ const AgentChatInterface: React.FC = () => {
         </button>
       </form>
     </div>
- );
+  );
 };
 
 export default AgentChatInterface;

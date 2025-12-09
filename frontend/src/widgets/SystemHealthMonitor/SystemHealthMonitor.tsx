@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { apiClient } from '../../shared/lib/api-client';
-import { HealthStatus } from '../../shared/types';
+import { apiClient } from '@/shared/lib/apiClient';
+
+interface HealthStatus {
+  status: string;
+  health_score: number;
+  issues_count: number;
+  last_check: string;
+  details: Record<string, any>;
+}
 
 interface SystemHealthMonitorProps {
   pollingInterval?: number;
 }
 
-const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({ 
+const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
   pollingInterval = 3000 // 30 секунд по умолчанию
 }) => {
   const [healthData, setHealthData] = useState<HealthStatus | null>(null);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchHealthStatus = async () => {
     try {
@@ -68,7 +75,7 @@ const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Состояние системы</h2>
-        <button 
+        <button
           onClick={fetchHealthStatus}
           disabled={loading}
           className="text-sm bg-primary-500 hover:bg-primary-60 text-white px-3 py-1 rounded disabled:opacity-50"
@@ -91,26 +98,27 @@ const SystemHealthMonitor: React.FC<SystemHealthMonitorProps> = ({
               Статус: {healthData.status === 'healthy' ? 'Здоров' : healthData.status === 'degraded' ? 'Деградированный' : 'Нездоровый'}
             </span>
           </div>
-          
+
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            <p>Время отклика: {(healthData.response_time || 0).toFixed(2)}ms</p>
-            <p>Последнее обновление: {new Date(healthData.timestamp).toLocaleString()}</p>
+            <p>Оценка здоровья: {healthData.health_score.toFixed(1)}/100</p>
+            <p>Количество проблем: {healthData.issues_count}</p>
+            <p>Последнее обновление: {new Date(healthData.last_check).toLocaleString()}</p>
           </div>
 
           <div className="mt-4">
-            <h3 className="font-medium text-gray-700 dark:text-gray-200 mb-2">Сервисы:</h3>
+            <h3 className="font-medium text-gray-700 dark:text-gray-200 mb-2">Детали:</h3>
             <div className="space-y-2">
-              {healthData.services && Object.entries(healthData.services).length > 0 ? (
-                Object.entries(healthData.services).map(([serviceName, serviceStatus]) => (
-                  <div key={serviceName} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                    <span className="text-gray-700 dark:text-gray-200">{serviceName}</span>
-                    <span className={`px-2 py-1 rounded text-xs ${getStatusBg(serviceStatus)} text-white`}>
-                      {serviceStatus}
+              {healthData.details && Object.entries(healthData.details).length > 0 ? (
+                Object.entries(healthData.details).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                    <span className="text-gray-700 dark:text-gray-200">{key}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                     </span>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Нет данных о состоянии сервисов</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Нет дополнительных деталей</p>
               )}
             </div>
           </div>
