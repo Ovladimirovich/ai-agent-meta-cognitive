@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Sphere, Line, Text, Html, Float } from '@react-three/drei';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../shared/lib/apiClient';
+import { apiClient } from '@/shared/lib/apiClient';
 import * as THREE from 'three';
 
 // Определение типов
@@ -10,7 +10,7 @@ interface MemoryNode {
   id: string;
   label: string;
   group: string;
- importance?: number;
+  importance?: number;
   color?: string;
   nodeType?: string;
   x?: number;
@@ -57,7 +57,7 @@ const MemoryNode3D: React.FC<{
   // Определение цвета узла на основе типа или важности
   const getColor = () => {
     if (node.color) return node.color;
-    
+
     // Цвета для разных групп
     const groupColors: Record<string, string> = {
       context: '#6366f1',      // indigo
@@ -65,7 +65,7 @@ const MemoryNode3D: React.FC<{
       experience: '#ec4899',   // pink
       default: '#64748b'       // slate
     };
-    
+
     return groupColors[node.group] || groupColors.default;
   };
 
@@ -108,14 +108,14 @@ const MemoryNode3D: React.FC<{
           />
         </Sphere>
       </Float>
-      
+
       {/* Подпись узла при наведении */}
       {hovered && (
         <Html
           position={[0, size + 0.2, 0]}
           center
           distanceFactor={5}
-          style={{ 
+          style={{
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
             color: 'white',
             padding: '4px 8px',
@@ -145,7 +145,7 @@ const MemoryLink3D: React.FC<{
     sourceNode.y || 0,
     sourceNode.z || 0
   ];
-  
+
   const targetPos: [number, number, number] = [
     targetNode.x || 0,
     targetNode.y || 0,
@@ -189,10 +189,10 @@ const MemoryScene3D: React.FC<{
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={1} />
       <pointLight position={[-10, -10, -10]} intensity={0.5} />
-      
+
       {/* Сетка для ориентации */}
       <gridHelper args={[20, 20, '#cccccc', '#cccccc']} position={[0, -5, 0]} />
-      
+
       {/* Узлы */}
       {memoryData.nodes.map((node) => (
         <MemoryNode3D
@@ -204,12 +204,12 @@ const MemoryScene3D: React.FC<{
           onHover={onNodeHover}
         />
       ))}
-      
+
       {/* Связи */}
       {memoryData.links.map((link, index) => {
         const sourceNode = memoryData.nodes.find(n => n.id === link.source);
         const targetNode = memoryData.nodes.find(n => n.id === link.target);
-        
+
         return (
           <MemoryLink3D
             key={`${link.source}-${link.target}`}
@@ -217,7 +217,7 @@ const MemoryScene3D: React.FC<{
             sourceNode={sourceNode}
             targetNode={targetNode}
             isHighlighted={
-              (selectedNode && 
+              (selectedNode &&
                 (selectedNode.id === link.source || selectedNode.id === link.target)) ||
               highlightNodes.has(link.source) ||
               highlightNodes.has(link.target)
@@ -225,9 +225,9 @@ const MemoryScene3D: React.FC<{
           />
         );
       })}
-      
+
       {/* Управление орбитой */}
-      <OrbitControls 
+      <OrbitControls
         enableDamping
         dampingFactor={0.05}
         minDistance={5}
@@ -250,51 +250,51 @@ const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({ className = '' }) =
       // Заглушка для получения данных о памяти, так как метода getMemoryState в apiClient нет
       return {
         nodes: [
-          { 
-            id: 'node1', 
-            label: 'Контекст 1', 
-            group: 'context', 
-            importance: 0.8, 
+          {
+            id: 'node1',
+            label: 'Контекст 1',
+            group: 'context',
+            importance: 0.8,
             color: '#6366f1',
             x: -2,
             y: 1,
             z: 0
           },
-          { 
-            id: 'node2', 
-            label: 'Знание 1', 
-            group: 'knowledge', 
-            importance: 0.6, 
+          {
+            id: 'node2',
+            label: 'Знание 1',
+            group: 'knowledge',
+            importance: 0.6,
             color: '#8b5cf6',
             x: 2,
             y: -1,
             z: 1
           },
-          { 
-            id: 'node3', 
-            label: 'Опыт 1', 
-            group: 'experience', 
-            importance: 0.9, 
+          {
+            id: 'node3',
+            label: 'Опыт 1',
+            group: 'experience',
+            importance: 0.9,
             color: '#ec489',
             x: 0,
             y: 2,
             z: -1
           },
-          { 
-            id: 'node4', 
-            label: 'Знание 2', 
-            group: 'knowledge', 
-            importance: 0.4, 
+          {
+            id: 'node4',
+            label: 'Знание 2',
+            group: 'knowledge',
+            importance: 0.4,
             color: '#8b5cf6',
             x: -3,
             y: -2,
             z: 2
           },
-          { 
-            id: 'node5', 
-            label: 'Контекст 2', 
-            group: 'context', 
-            importance: 0.7, 
+          {
+            id: 'node5',
+            label: 'Контекст 2',
+            group: 'context',
+            importance: 0.7,
             color: '#6366f1',
             x: 3,
             y: 0,
@@ -419,10 +419,10 @@ const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({ className = '' }) =
                   document.querySelector('.h-96')?.clientHeight || 400
                 );
               };
-              
+
               window.addEventListener('resize', handleResize);
               handleResize(); // Инициализация размера
-              
+
               return () => window.removeEventListener('resize', handleResize);
             }}
           >

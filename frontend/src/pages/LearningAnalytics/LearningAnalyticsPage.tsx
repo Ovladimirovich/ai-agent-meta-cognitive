@@ -40,7 +40,7 @@ const LearningAnalyticsPage: React.FC = () => {
   return (
     <PageWrapper title="Аналитика обучения">
       <div className="space-y-8">
-        <LearningMetricsDashboard metrics={metrics} />
+        <LearningMetricsDashboard />
         <ReasoningTraceViewer className="mt-8" />
       </div>
     </PageWrapper>
