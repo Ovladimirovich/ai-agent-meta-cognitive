@@ -1212,16 +1212,32 @@ if __name__ == "__main__":
 
 
 # Регистрация эндпоинтов когнитивной нагрузки
-register_cognitive_load_endpoints(app)
+try:
+    register_cognitive_load_endpoints(app)
+    logger.info("✅ Cognitive load endpoints registered")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to register cognitive load endpoints: {e}")
 
 # Регистрация эндпоинтов настройки мета-когнитивных параметров
-register_meta_cognitive_config_endpoints(app)
+try:
+    register_meta_cognitive_config_endpoints(app)
+    logger.info("✅ Meta-cognitive config endpoints registered")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to register meta-cognitive config endpoints: {e}")
 
 # Регистрация расширенных эндпоинтов мониторинга
-register_extended_monitoring_endpoints(app)
+try:
+    register_extended_monitoring_endpoints(app)
+    logger.info("✅ Extended monitoring endpoints registered")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to register extended monitoring endpoints: {e}")
 
 # Регистрация эндпоинтов визуализации
-register_visualization_endpoints(app)
+try:
+    register_visualization_endpoints(app)
+    logger.info("✅ Visualization endpoints registered")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to register visualization endpoints: {e}")
 
 
 # Обработка SPA маршрутов (должна быть последней)
