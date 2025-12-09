@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRealtimeData } from '../../widgets/RealtimeDataProvider/RealtimeDataProvider';
-import { apiClient } from '../../shared/lib/apiClient';
+import { apiClient } from '@/shared/lib/apiClient';
 import { useQuery } from '@tanstack/react-query';
 
 interface CognitiveMetric {
@@ -79,9 +79,9 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
 
   // Функция для получения общего статуса здоровья
   const getOverallHealthStatus = useCallback((data: CognitiveHealthData) => {
-    const avg = (data.cognitiveLoad + data.confidenceLevel + data.processingSpeed + 
-                data.memoryUtilization + data.attentionSpan + data.decisionAccuracy) / 6;
-    
+    const avg = (data.cognitiveLoad + data.confidenceLevel + data.processingSpeed +
+      data.memoryUtilization + data.attentionSpan + data.decisionAccuracy) / 6;
+
     if (avg >= 0.8) return { status: 'excellent', label: 'Отличное', color: 'text-green-600', bgColor: 'bg-green-100' };
     if (avg >= 0.6) return { status: 'good', label: 'Хорошее', color: 'text-blue-600', bgColor: 'bg-blue-100' };
     if (avg >= 0.4) return { status: 'average', label: 'Удовлетворительное', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
@@ -173,8 +173,8 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
               <p className="text-sm text-gray-600 mb-3">{metric.description}</p>
               <div className="flex items-center">
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mr-3">
-                  <div 
-                    className={`h-2.5 rounded-full ${getMetricColor(metric.status)}`} 
+                  <div
+                    className={`h-2.5 rounded-full ${getMetricColor(metric.status)}`}
                     style={{ width: `${metric.value * 100}%` }}
                   ></div>
                 </div>
@@ -196,7 +196,7 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
               Обновлено: {lastUpdated?.toLocaleTimeString('ru-RU')}
             </div>
           </div>
-          
+
           <div className="mt-4">
             <h3 className="font-medium text-gray-700 mb-2">Рекомендации:</h3>
             <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
@@ -207,9 +207,9 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
               {currentHealthData.confidenceLevel < 0.6 && <li>Рассмотрите корректировку метрик уверенности</li>}
               {currentHealthData.processingSpeed < 0.6 && <li>Оптимизируйте алгоритмы обработки для повышения скорости</li>}
               {Object.keys(currentHealthData).length > 0 && !(
-                currentHealthData.cognitiveLoad > 0.8 || 
-                currentHealthData.attentionSpan < 0.5 || 
-                currentHealthData.memoryUtilization > 0.8 || 
+                currentHealthData.cognitiveLoad > 0.8 ||
+                currentHealthData.attentionSpan < 0.5 ||
+                currentHealthData.memoryUtilization > 0.8 ||
                 currentHealthData.decisionAccuracy < 0.7 ||
                 currentHealthData.confidenceLevel < 0.6 ||
                 currentHealthData.processingSpeed < 0.6

@@ -4,7 +4,7 @@ import ReflectionTimeline from './ReflectionTimeline';
 import { ReflectionEvent } from '../../shared/types/reflection';
 
 // Mock для apiClient
-jest.mock('../../shared/lib/apiClient', () => ({
+jest.mock('@/shared/lib/apiClient', () => ({
   apiClient: {
     query: jest.fn()
   }
@@ -92,7 +92,7 @@ describe('ReflectionTimeline', () => {
 
   test('renders with provided reflection data', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });
@@ -104,7 +104,7 @@ describe('ReflectionTimeline', () => {
 
   test('filters reflections by type', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });
@@ -124,7 +124,7 @@ describe('ReflectionTimeline', () => {
 
   test('filters reflections by minimum confidence', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });
@@ -144,7 +144,7 @@ describe('ReflectionTimeline', () => {
 
   test('opens detail modal when reflection is clicked', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });
@@ -162,7 +162,7 @@ describe('ReflectionTimeline', () => {
 
   test('closes detail modal when close button is clicked', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });
@@ -196,7 +196,7 @@ describe('ReflectionTimeline', () => {
 
   test('displays no reflections message when filters exclude all items', async () => {
     render(<ReflectionTimeline reflections={mockReflections} />);
-    
+
     await waitFor(() => {
       expect(screen.queryByText('Загрузка таймлайна рефлексии...')).not.toBeInTheDocument();
     });

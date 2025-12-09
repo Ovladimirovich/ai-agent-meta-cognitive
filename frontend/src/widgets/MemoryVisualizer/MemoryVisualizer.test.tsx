@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 // Мокаем Three.js
 jest.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div data-testid="canvas">{children}</div>,
- useFrame: jest.fn(),
+  useFrame: jest.fn(),
   useThree: jest.fn(() => ({
     camera: { position: { set: jest.fn() }, lookAt: jest.fn() },
   })),
@@ -31,7 +31,7 @@ jest.mock('@react-three/drei', () => ({
 }));
 
 // Мокаем apiClient
-jest.mock('../../shared/lib/apiClient', () => ({
+jest.mock('@/shared/lib/apiClient', () => ({
   apiClient: {
     getMemoryState: jest.fn(),
   },
@@ -53,10 +53,10 @@ describe('MemoryVisualizer', () => {
 
   test('должен отображать заголовок и основные элементы', async () => {
     renderWithQueryProvider(<MemoryVisualizer />);
-    
+
     // Проверяем, что заголовок отображается
     expect(screen.getByText('Визуализация Памяти')).toBeInTheDocument();
-    
+
     // Ждем, пока отобразится Canvas
     await waitFor(() => {
       expect(screen.getByTestId('canvas')).toBeInTheDocument();
@@ -65,12 +65,12 @@ describe('MemoryVisualizer', () => {
 
   test('должен отображать информацию о выбранном узле', async () => {
     renderWithQueryProvider(<MemoryVisualizer />);
-    
+
     // Ждем, пока отобразится Canvas
     await waitFor(() => {
       expect(screen.getByTestId('canvas')).toBeInTheDocument();
     });
-    
+
     // Проверяем, что легенда отображается
     expect(screen.getByText('Выбранный узел')).toBeInTheDocument();
     expect(screen.getByText('Обычный узел')).toBeInTheDocument();
@@ -80,24 +80,24 @@ describe('MemoryVisualizer', () => {
 
   test('должен отображать статистику узлов и связей', async () => {
     renderWithQueryProvider(<MemoryVisualizer />);
-    
+
     // Ждем, пока отобразится Canvas
     await waitFor(() => {
       expect(screen.getByTestId('canvas')).toBeInTheDocument();
     });
-    
+
     // Проверяем, что отображается статистика
     expect(screen.getByText(/Узлов: \d+ \| Связей: \d+/)).toBeInTheDocument();
   });
 
   test('должен отображать 3D сцену при наличии данных', async () => {
     renderWithQueryProvider(<MemoryVisualizer />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('canvas')).toBeInTheDocument();
     });
-    
+
     // Проверяем, что элементы 3D сцены отображаются
     expect(screen.getByTestId('orbit-controls')).toBeInTheDocument();
- });
+  });
 });

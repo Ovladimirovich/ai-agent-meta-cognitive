@@ -12,9 +12,9 @@ import { WebSocketProvider } from '../../widgets/AdvancedAnalyticsDashboard/WebS
 import { RealtimeDataProvider } from '../../widgets/RealtimeDataProvider/RealtimeDataProvider';
 import { useTheme } from '../../app/providers/ThemeProvider';
 import { ChatHistorySidebar } from '../../features/chat-history/ChatHistorySidebar';
-import { useChatHistory } from '../../shared/hooks/useChatHistory';
+import { useChatHistory } from '@/shared/hooks/useChatHistory';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../shared/lib/apiClient';
+import { apiClient } from '@/shared/lib/apiClient';
 
 export const AgentDashboard: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -27,7 +27,7 @@ export const AgentDashboard: React.FC = () => {
     loadSession,
     deleteSession,
     setCurrentSession
- } = useChatHistory();
+  } = useChatHistory();
 
   // Загрузка системной информации
   const { data: systemInfo, isLoading: isSystemInfoLoading } = useQuery({
@@ -110,13 +110,13 @@ export const AgentDashboard: React.FC = () => {
                       </svg>
                     )}
                   </button>
-                  
+
                   {/* Индикатор состояния бэкенда */}
                   <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center space-x-2">
                     <div className={`w-2 h-2 rounded-full ${isSystemInfoLoading ? 'bg-yellow-500' : systemInfo ? 'bg-green-600' : 'bg-red-600'}`}></div>
                     <span>Backend: {isSystemInfoLoading ? 'Проверка...' : systemInfo ? '● Online' : '○ Offline'}</span>
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 dark:text-gray-300">
                     {systemInfo?.version || 'v1.0.0'}
                   </div>
@@ -135,7 +135,7 @@ export const AgentDashboard: React.FC = () => {
                 <MemoryVisualizer className="h-full" />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               <div className="lg:col-span-1">
                 <LearningMetricsDashboard />

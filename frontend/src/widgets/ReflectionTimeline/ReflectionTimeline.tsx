@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ReflectionEvent, ReflectionFilter } from '../../shared/types/reflection';
-import { apiClient } from '../../shared/lib/apiClient';
+import { apiClient } from '@/shared/lib/apiClient';
 
 interface ReflectionTimelineProps {
   reflections?: ReflectionEvent[];
@@ -675,7 +675,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
           if (filters.dateRange.start) queryParams.append('start_date', filters.dateRange.start);
           if (filters.dateRange.end) queryParams.append('end_date', filters.dateRange.end);
           queryParams.append('min_confidence', filters.minConfidence.toString());
-          
+
           const response = await apiClient.query(`
             query GetReflectionTimeline($first: Int, $filters: ReflectionFilters) {
               reflectionTimeline(first: $first, filters: $filters) {
@@ -1040,12 +1040,12 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
     if (!filters.types.includes(reflection.type)) {
       return false;
     }
-    
+
     // Фильтр по минимальной уверенности
     if (reflection.confidence < filters.minConfidence) {
       return false;
     }
-    
+
     // Фильтр по дате
     if (filters.dateRange.start && new Date(reflection.timestamp) < new Date(filters.dateRange.start)) {
       return false;
@@ -1053,9 +1053,9 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
     if (filters.dateRange.end && new Date(reflection.timestamp) > new Date(filters.dateRange.end)) {
       return false;
     }
-    
+
     return true;
- });
+  });
 
   const handleFilterChange = (filterType: keyof ReflectionFilter, value: any) => {
     setFilters(prev => ({
@@ -1130,18 +1130,18 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
             <div className="relative">
               {/* Линия таймлайна */}
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
-              
+
               <div className="space-y-8">
                 {filteredReflections.map((reflection, index) => (
                   <div key={reflection.id} className="relative pl-12">
                     {/* Точка на таймлайне */}
                     <div className={`absolute left-0 top-3 w-8 h-8 rounded-full flex items-center justify-center text-white ${getEventTypeColor(reflection.type)} shadow-md cursor-pointer`}
-                         onClick={() => handleReflectionClick(reflection)}>
+                      onClick={() => handleReflectionClick(reflection)}>
                       {getEventTypeLabel(reflection.type).charAt(0)}
                     </div>
-                    
+
                     <div className="bg-gray-50 rounded-lg p-4 border border-gray-20 hover:shadow-md transition-shadow cursor-pointer"
-                         onClick={() => handleReflectionClick(reflection)}>
+                      onClick={() => handleReflectionClick(reflection)}>
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold text-lg text-gray-800">{reflection.title}</h3>
@@ -1166,9 +1166,9 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                           </div>
                         </div>
                       </div>
-                      
+
                       <p className="mt-3 text-gray-600">{reflection.description}</p>
-                      
+
                       {reflection.relatedLearning && (
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <span className="text-sm font-medium text-gray-700">Связанное обучение: </span>
@@ -1201,7 +1201,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                 <h3 className="text-xl font-bold text-gray-800">{selectedReflection.title}</h3>
                 <button onClick={handleCloseDetail} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <span className="font-medium text-gray-700">Тип: </span>
@@ -1209,29 +1209,29 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                     {getEventTypeLabel(selectedReflection.type)}
                   </span>
                 </div>
-                
+
                 <div>
                   <span className="font-medium text-gray-700">Время: </span>
                   <span>{new Date(selectedReflection.timestamp).toLocaleString('ru-RU')}</span>
                 </div>
-                
+
                 <div>
                   <span className="font-medium text-gray-700">Уверенность: </span>
                   <span>{(selectedReflection.confidence * 100).toFixed(0)}%</span>
                 </div>
-                
+
                 <div>
                   <span className="font-medium text-gray-700">Описание: </span>
                   <p className="mt-1 text-gray-600">{selectedReflection.description}</p>
                 </div>
-                
+
                 {selectedReflection.relatedLearning && (
                   <div>
                     <span className="font-medium text-gray-700">Связанное обучение: </span>
                     <p className="mt-1 text-gray-600">{selectedReflection.relatedLearning}</p>
                   </div>
                 )}
-                
+
                 {selectedReflection.reasoningAnalysis && (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-semibold text-gray-800 mb-2">Анализ рассуждений:</h4>
@@ -1239,7 +1239,7 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                     <p>Эффективность: {selectedReflection.reasoningAnalysis!.efficiency.optimizationScore.toFixed(2)}</p>
                   </div>
                 )}
-                
+
                 {selectedReflection.performanceAnalysis && (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-semibold text-gray-800 mb-2">Анализ производительности:</h4>
@@ -1247,14 +1247,14 @@ const ReflectionTimeline: React.FC<ReflectionTimelineProps> = ({
                     <p>Качество: {(selectedReflection.performanceAnalysis!.metrics.qualityScore * 100).toFixed(0)}%</p>
                   </div>
                 )}
-                
+
                 {selectedReflection.errorAnalysis && (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-semibold text-gray-800 mb-2">Анализ ошибок:</h4>
                     <p>Количество ошибок: {selectedReflection.errorAnalysis!.metrics.total_errors || 0}</p>
                   </div>
                 )}
-                
+
                 <div className="border-t pt-4 mt-4">
                   <h4 className="font-semibold text-gray-800 mb-2">Инсайты:</h4>
                   {selectedReflection.insights.length > 0 ? (
