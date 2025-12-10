@@ -33,6 +33,7 @@ describe('ApiClient Environment Configuration', () => {
 
     // Импортируем apiClient после мока окружения
     const { apiClient } = await import('./apiClient');
+    expect(apiClient).toBeDefined();
 
     // Получаем baseUrl из конфигурации
     // Для этого нужно получить доступ к приватному свойству config
@@ -40,6 +41,7 @@ describe('ApiClient Environment Configuration', () => {
 
     // Создаем временный экземпляр ApiClient для тестирования логики
     const { ApiClient } = await import('./apiClient');
+    expect(ApiClient).toBeDefined();
 
     // Тестируем функцию getBaseUrl напрямую
     const getBaseUrl = () => {
