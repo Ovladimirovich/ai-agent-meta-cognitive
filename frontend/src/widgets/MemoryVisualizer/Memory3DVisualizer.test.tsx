@@ -8,7 +8,7 @@ jest.mock('three', () => ({
   WebGLRenderer: jest.fn(() => ({
     setSize: jest.fn(),
     setPixelRatio: jest.fn(),
-    domElement: document.createElement('canvas'),
+    domElement: typeof global !== 'undefined' && typeof global.window !== 'undefined' && typeof global.window.document !== 'undefined' && typeof global.window.document.createElement === 'function' ? global.window.document.createElement('canvas') : { tagName: 'canvas' },
     render: jest.fn(),
     dispose: jest.fn(),
   })),

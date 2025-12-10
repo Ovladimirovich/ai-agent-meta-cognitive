@@ -21,44 +21,44 @@ jest.mock('../../widgets/CognitiveHealthMonitor/CognitiveHealthMonitor', () => (
 
 // Моки для провайдеров
 jest.mock('../../widgets/AdvancedAnalyticsDashboard/WebSocketProvider', () => ({
-  WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="websocket-provider">{children}</div>,
   useWebSocket: () => ({ ws: null, isConnected: true })
 }));
 
-jest.mock('../../widgets/RealtimeDataProvider', () => ({
-  RealtimeDataProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  useRealtimeData: () => ({ 
-    cognitiveData: null, 
-    memoryData: null, 
-    reflectionData: null, 
-    isLoading: false 
+jest.mock('../../widgets/RealtimeDataProvider/RealtimeDataProvider', () => ({
+  RealtimeDataProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="realtime-data-provider">{children}</div>,
+  useRealtimeData: () => ({
+    cognitiveData: null,
+    memoryData: null,
+    reflectionData: null,
+    isLoading: false
   })
 }));
 
 describe('AgentDashboard Integration', () => {
   test('renders all main components', async () => {
     render(<AgentDashboard />);
-    
+
     // Проверяем заголовок
     expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
     expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
-    
+
     // Проверяем наличие всех основных компонентов
     await waitFor(() => {
       expect(screen.getByTestId('cognitive-health-monitor')).toBeInTheDocument();
     });
-    
+
     expect(screen.getByTestId('memory-visualizer')).toBeInTheDocument();
     expect(screen.getByTestId('reflection-timeline')).toBeInTheDocument();
     expect(screen.getByTestId('agent-chat-interface')).toBeInTheDocument();
-    
+
     // Проверяем футер
     expect(screen.getByText(/© 2025 Meta-Cognitive AI Agent/)).toBeInTheDocument();
   });
 
   test('renders header with correct information', () => {
     render(<AgentDashboard />);
-    
+
     expect(screen.getByText('Meta-Cognitive AI Agent')).toBeInTheDocument();
     expect(screen.getByText('Интеллектуальная система с самодиагностикой')).toBeInTheDocument();
     expect(screen.getByText('Backend:')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('AgentDashboard Integration', () => {
 
   test('renders footer with correct information', () => {
     render(<AgentDashboard />);
-    
+
     expect(screen.getByText(/© 2025 Meta-Cognitive AI Agent/)).toBeInTheDocument();
     expect(screen.getByText('API Docs')).toBeInTheDocument();
     expect(screen.getByText('GraphQL')).toBeInTheDocument();
@@ -76,23 +76,23 @@ describe('AgentDashboard Integration', () => {
 
   test('has correct layout structure', () => {
     render(<AgentDashboard />);
-    
+
     // Проверяем, что компоненты находятся внутри сетки
     const cognitiveHealthMonitor = screen.getByTestId('cognitive-health-monitor');
     const memoryVisualizer = screen.getByTestId('memory-visualizer');
-    
+
     expect(cognitiveHealthMonitor).toBeInTheDocument();
     expect(memoryVisualizer).toBeInTheDocument();
   });
 
   test('connects all components to WebSocket provider', async () => {
     render(<AgentDashboard />);
-    
+
     // Проверяем, что все компоненты были загружены (через тестовые идентификаторы)
     await waitFor(() => {
       expect(screen.getByTestId('cognitive-health-monitor')).toBeInTheDocument();
     });
-    
+
     expect(screen.getByTestId('memory-visualizer')).toBeInTheDocument();
     expect(screen.getByTestId('reflection-timeline')).toBeInTheDocument();
     expect(screen.getByTestId('agent-chat-interface')).toBeInTheDocument();

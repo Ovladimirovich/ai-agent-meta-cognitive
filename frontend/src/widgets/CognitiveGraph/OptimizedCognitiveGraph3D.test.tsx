@@ -8,6 +8,7 @@ jest.mock('@react-three/fiber', () => ({
   useFrame: jest.fn(),
   useThree: jest.fn(() => ({
     camera: { position: { set: jest.fn() }, lookAt: jest.fn() },
+    gl: { domElement: {} },
   })),
 }));
 
@@ -58,22 +59,22 @@ const mockCognitiveData = {
 describe('OptimizedCognitiveGraph3D', () => {
   test('должен отображать заголовок и основные элементы', () => {
     render(<OptimizedCognitiveGraph3D data={mockCognitiveData} />);
-    
+
     // Проверяем, что заголовок отображается
     expect(screen.getByText('Когнитивный Граф (Оптимизированный)')).toBeInTheDocument();
-    
+
     // Проверяем, что Canvas отображается
     expect(screen.getByTestId('canvas')).toBeInTheDocument();
   });
 
   test('должен отображать информацию о статистике узлов и связей', () => {
     render(<OptimizedCognitiveGraph3D data={mockCognitiveData} />);
-    
+
     // Проверяем, что отображается статистика
     expect(screen.getByText('Узлов: 2 | Связей: 1')).toBeInTheDocument();
   });
 
- test('должен отображать предупреждение при превышении лимита узлов', () => {
+  test('должен отображать предупреждение при превышении лимита узлов', () => {
     const largeData = {
       nodes: Array.from({ length: 150 }, (_, i) => ({
         id: `node${i}`,
@@ -88,16 +89,16 @@ describe('OptimizedCognitiveGraph3D', () => {
       })),
       links: [],
     };
-    
+
     render(<OptimizedCognitiveGraph3D data={largeData} maxNodes={100} />);
-    
+
     // Проверяем, что отображается предупреждение
     expect(screen.getByText('Показано 100 из 150 узлов')).toBeInTheDocument();
   });
 
   test('должен отображать легенду типов узлов', () => {
     render(<OptimizedCognitiveGraph3D data={mockCognitiveData} />);
-    
+
     // Проверяем, что элементы легенды отображаются
     expect(screen.getByText('Убеждение')).toBeInTheDocument();
     expect(screen.getByText('Знание')).toBeInTheDocument();
@@ -109,7 +110,7 @@ describe('OptimizedCognitiveGraph3D', () => {
 
   test('должен отображать легенду типов связей', () => {
     render(<OptimizedCognitiveGraph3D data={mockCognitiveData} />);
-    
+
     // Проверяем, что элементы легенды для связей отображаются
     expect(screen.getByText('Причинная связь')).toBeInTheDocument();
     expect(screen.getByText('Ассоциативная связь')).toBeInTheDocument();
@@ -118,15 +119,15 @@ describe('OptimizedCognitiveGraph3D', () => {
     expect(screen.getByText('Поддерживающая связь')).toBeInTheDocument();
   });
 
- test('должен отображать 3D сцену с узлами и связями', async () => {
+  test('должен отображать 3D сцену с узлами и связями', async () => {
     render(<OptimizedCognitiveGraph3D data={mockCognitiveData} />);
-    
+
     // Ждем, пока отобразится Canvas
     await waitFor(() => {
       expect(screen.getByTestId('canvas')).toBeInTheDocument();
     });
-    
+
     // Проверяем, что элементы 3D сцены отображаются
     expect(screen.getByTestId('orbit-controls')).toBeInTheDocument();
- });
+  });
 });

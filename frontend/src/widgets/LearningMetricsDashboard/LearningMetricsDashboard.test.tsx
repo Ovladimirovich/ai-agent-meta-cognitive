@@ -45,16 +45,6 @@ jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>,
 }));
 
-// Мок хука useLearningMetrics
-jest.mock('./hooks/useLearningMetrics', () => ({
-  useLearningMetrics: () => ({
-    data: mockMetrics,
-    loading: false,
-    error: null,
-    refresh: jest.fn()
-  })
-}));
-
 describe('LearningMetricsDashboard', () => {
   test('отображает основные метрики', () => {
     render(<LearningMetricsDashboard />);
@@ -106,6 +96,16 @@ describe('LearningMetricsDashboard', () => {
 
   test('проверяет вызов функции обновления', () => {
     const mockRefresh = jest.fn();
+
+    // Пересоздаем мок для хука с mockRefresh
+    jest.mock('./hooks/useLearningMetrics', () => ({
+      useLearningMetrics: () => ({
+        data: mockMetrics,
+        loading: false,
+        error: null,
+        refresh: mockRefresh
+      })
+    }));
 
     render(<LearningMetricsDashboard />);
 

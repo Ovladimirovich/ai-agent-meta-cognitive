@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { AgentDashboard } from './AgentDashboard';
 
-// Mock для всех компонентов, используемых в AgentDashboard
+// Мок для всех компонентов, используемых в AgentDashboard
 jest.mock('../../features/agent-interaction/AgentChatInterface', () => ({
   AgentChatInterface: () => <div data-testid="agent-chat-interface">Agent Chat Interface</div>
 }));
@@ -17,6 +17,29 @@ jest.mock('../../widgets/ReflectionTimeline/ReflectionTimeline', () => ({
 jest.mock('../../widgets/CognitiveHealthMonitor/CognitiveHealthMonitor', () => ({
   default: () => <div data-testid="cognitive-health-monitor">Cognitive Health Monitor</div>
 }));
+
+// Мок для ThemeProvider
+jest.mock('../../app/providers/ThemeProvider', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="theme-provider">{children}</div>,
+  useTheme: () => ({ theme: 'light', setTheme: jest.fn() })
+}));
+
+// Мок для react-query
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(({ queryFn, initialData }) => ({
+    data: initialData || { version: 'v1.0' },
+    isLoading: false,
+    refetch: jest.fn(),
+  })),
+}));
+
+// Мок для apiClient
+jest.mock('@/shared/lib/apiClient', () => ({
+  apiClient: {
+    getSystemInfo: jest.fn(() => Promise.resolve({ version: 'v1.0.0' })),
+  },
+}));
+
 
 describe('AgentDashboard', () => {
   test('renders all main components', () => {

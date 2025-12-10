@@ -10,7 +10,7 @@ jest.mock('@/shared/lib/apiClient', () => ({
 }));
 
 // Mock для RealtimeDataProvider
-jest.mock('../../widgets/RealtimeDataProvider', () => ({
+jest.mock('../../widgets/RealtimeDataProvider/RealtimeDataProvider', () => ({
   useRealtimeData: () => ({
     reflectionData: null,
     isLoading: false

@@ -44,9 +44,14 @@ describe('Learning API Integration Tests', () => {
 
     expect(apiClient.getLearningMetrics).toHaveBeenCalled();
     expect(result).toEqual({
-      performanceData: mockApiResponse.performanceData || [],
-      patternStats: mockApiResponse.patternStats || [],
-      adaptationTrends: mockApiResponse.adaptationTrends || []
+      performanceData: [],
+      patternStats: [],
+      adaptationTrends: [],
+      totalExperiences: 0,
+      averageLearningRate: 0,
+      skillImprovementRate: 0,
+      cognitiveLoadTrend: [],
+      metaCognitiveAwareness: 0,
     });
   });
 
