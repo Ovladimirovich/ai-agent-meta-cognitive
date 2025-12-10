@@ -18,7 +18,7 @@ from agent.meta_cognitive.meta_controller import MetaCognitiveController
 from agent.learning.learning_engine import LearningEngine
 from agent.self_awareness.self_monitoring import SelfMonitoringSystem
 from api.input_validator import validate_query
-from api.auth import get_current_user
+# from api.auth import get_current_user # Закомментирован для версии без аутентификации
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class AsyncAPIManager:
         """
         try:
             start_time = time.time()
-            
+
             # Создание объекта запроса для ядра агента
             agent_request = type('AgentRequest', (), {
                 'id': f"api_{int(time.time())}_{hash(request.query) % 1000}",
@@ -126,7 +126,7 @@ class AsyncAPIManager:
         """
         try:
             start_time = time.time()
-            
+
             # Создание объекта запроса для ядра агента
             agent_request = type('AgentRequest', (), {
                 'id': f"stream_{int(time.time())}_{hash(request.query) % 1000}",
@@ -145,7 +145,7 @@ class AsyncAPIManager:
             # Потоковая передача результата по частям
             content = str(response.result)
             chunk_size = 50  # Размер чанка в символах
-            
+
             for i in range(0, len(content), chunk_size):
                 chunk = content[i:i + chunk_size]
                 chunk_data = {
@@ -345,8 +345,7 @@ def register_async_endpoints(app: FastAPI, api_manager: AsyncAPIManager):
     """
     @app.post("/agent/process-async", response_model=AsyncAgentResponse)
     async def process_request_async_endpoint(
-        request: AsyncAgentRequest,
-        current_user = Depends(get_current_user)
+        request: AsyncAgentRequest
     ):
         """Асинхронная обработка запроса"""
         if request.stream:
@@ -361,8 +360,7 @@ def register_async_endpoints(app: FastAPI, api_manager: AsyncAPIManager):
 
     @app.post("/agent/process-meta-async", response_model=AsyncMetaCognitiveResponse)
     async def process_request_with_meta_cognition_async_endpoint(
-        request: AsyncAgentRequest,
-        current_user = Depends(get_current_user)
+        request: AsyncAgentRequest
     ):
         """Асинхронная обработка запроса с мета-познанием"""
         return await api_manager.process_request_with_meta_cognition_async(request)

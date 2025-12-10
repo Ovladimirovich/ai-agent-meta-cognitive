@@ -21,7 +21,7 @@ from monitoring.health_check_system import (
 )
 from monitoring.alerting_system import alert_manager
 from monitoring.metrics_collector import metrics_collector
-from api.auth import get_current_user
+# from api.auth import get_current_user  # Закомментирован для версии без аутентификации
 from agent.core.agent_core import AgentCore
 
 
@@ -78,12 +78,9 @@ class ActiveAlertsResponse(BaseModel):
 
 
 @router.get("/status", response_model=HealthStatusResponse)
-async def get_health_status(current_user = Depends(get_current_user)):
+async def get_health_status():
     """
     Получение общего статуса здоровья системы
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         HealthStatusResponse: Статус здоровья системы
@@ -117,12 +114,9 @@ async def get_health_status(current_user = Depends(get_current_user)):
 
 
 @router.get("/detailed", response_model=Dict[str, HealthCheckResponse])
-async def get_detailed_health(current_user = Depends(get_current_user)):
+async def get_detailed_health():
     """
     Получение детализированной информации о здоровье
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         Dict[str, HealthCheckResponse]: Детализированные результаты проверок
@@ -148,12 +142,9 @@ async def get_detailed_health(current_user = Depends(get_current_user)):
 
 
 @router.get("/summary", response_model=HealthSummaryResponse)
-async def get_health_summary(current_user = Depends(get_current_user)):
+async def get_health_summary():
     """
     Получение сводки по здоровью системы
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         HealthSummaryResponse: Сводка по здоровью системы
@@ -169,12 +160,9 @@ async def get_health_summary(current_user = Depends(get_current_user)):
 
 
 @router.get("/system", response_model=SystemHealthResponse)
-async def get_system_health(current_user = Depends(get_current_user)):
+async def get_system_health():
     """
     Получение информации о системном здоровье
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         SystemHealthResponse: Информация о системном здоровье
@@ -203,12 +191,9 @@ async def get_system_health(current_user = Depends(get_current_user)):
 
 
 @router.get("/agent", response_model=HealthCheckResponse)
-async def get_agent_health(current_user = Depends(get_current_user)):
+async def get_agent_health():
     """
     Получение информации о здоровье AI агента
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         HealthCheckResponse: Информация о здоровье агента
@@ -232,12 +217,9 @@ async def get_agent_health(current_user = Depends(get_current_user)):
 
 
 @router.get("/metrics", response_model=Dict[str, Any])
-async def get_health_metrics(current_user = Depends(get_current_user)):
+async def get_health_metrics():
     """
     Получение метрик здоровья системы
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         Dict[str, Any]: Метрики здоровья системы
@@ -270,12 +252,9 @@ async def get_health_metrics(current_user = Depends(get_current_user)):
 
 
 @router.get("/alerts/active", response_model=ActiveAlertsResponse)
-async def get_active_alerts(current_user = Depends(get_current_user)):
+async def get_active_alerts():
     """
     Получение информации об активных алертах
-
-    Args:
-        current_user: Аутентифицированный пользователь
 
     Returns:
         ActiveAlertsResponse: Информация об активных алертах
@@ -307,13 +286,12 @@ async def get_active_alerts(current_user = Depends(get_current_user)):
 
 
 @router.post("/check/{check_name}")
-async def run_specific_check(check_name: str, current_user = Depends(get_current_user)):
+async def run_specific_check(check_name: str):
     """
     Запуск конкретной проверки здоровья
 
     Args:
         check_name: Название проверки
-        current_user: Аутентифицированный пользователь
 
     Returns:
         HealthCheckResponse: Результат проверки
@@ -338,13 +316,12 @@ async def run_specific_check(check_name: str, current_user = Depends(get_current
 
 
 @router.get("/groups/{group_name}", response_model=Dict[str, HealthCheckResponse])
-async def run_group_checks(group_name: str, current_user = Depends(get_current_user)):
+async def run_group_checks(group_name: str):
     """
     Запуск проверок для конкретной группы
 
     Args:
         group_name: Название группы
-        current_user: Аутентифицированный пользователь
 
     Returns:
         Dict[str, HealthCheckResponse]: Результаты проверок группы

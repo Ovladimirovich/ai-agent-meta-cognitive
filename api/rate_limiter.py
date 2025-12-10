@@ -177,7 +177,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 rate_limiter = InMemoryRateLimiter()
 
 # Настройка стандартных правил
-def setup_default_rate_limits():
+def setup_default_rate_limits(app=None):
     """Настройка стандартных правил rate limiting"""
 
     # Агент API - более строгие лимиты

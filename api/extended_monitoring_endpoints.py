@@ -15,7 +15,7 @@ from agent.core.agent_core import AgentCore
 from agent.meta_cognitive.cognitive_load_analyzer import CognitiveLoadAnalyzer
 from agent.learning.adaptation_engine import AdaptationEngine
 from agent.self_awareness.self_monitoring import SelfMonitoringSystem
-from api.auth import get_current_user
+# from api.auth import get_current_user # Закомментирован для версии без аутентификации
 
 logger = logging.getLogger(__name__)
 
@@ -83,20 +83,17 @@ self_monitoring: Optional[SelfMonitoringSystem] = None
 
 
 @router.get("/debug-info", response_model=DebugInfoResponse)
-async def get_debug_info(current_user = Depends(get_current_user)):
+async def get_debug_info():
     """
     Получение комплексной отладочной информации
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         DebugInfoResponse: Отладочная информация
     """
     try:
         # Сбор информации о процессе
         process = psutil.Process(os.getpid())
-        
+
         process_info = {
             'pid': process.pid,
             'name': process.name(),
@@ -105,7 +102,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             'num_threads': process.num_threads(),
             'num_fds': process.num_fds() if hasattr(process, 'num_fds') else 'N/A'
         }
-        
+
         # Сбор информации о памяти
         memory_info = {
             'rss': process.memory_info().rss,
@@ -115,7 +112,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             'total': psutil.virtual_memory().total,
             'used_percent': psutil.virtual_memory().percent
         }
-        
+
         # Сбор информации о CPU
         cpu_info = {
             'percent': process.cpu_percent(),
@@ -123,7 +120,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             'cpu_times': psutil.cpu_times()._asdict(),
             'load_average': psutil.getloadavg()
         }
-        
+
         # Сбор информации о диске
         disk_usage = psutil.disk_usage('/')
         disk_info = {
@@ -132,7 +129,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             'free': disk_usage.free,
             'percent': disk_usage.percent
         }
-        
+
         # Сбор информации о сети
         net_io = psutil.net_io_counters()
         network_info = {
@@ -141,7 +138,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             'packets_sent': net_io.packets_sent,
             'packets_recv': net_io.packets_recv
         }
-        
+
         # Сбор информации о состоянии агента (если доступно)
         agent_state = {}
         if agent_core:
@@ -151,7 +148,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
                 'memory_entries': getattr(agent_core.memory_manager, 'get_memory_stats', lambda: {'total_entries': 0})()['total_entries'] if hasattr(agent_core, 'memory_manager') else 0,
                 'config': getattr(agent_core, 'config', {}).__dict__ if hasattr(agent_core, 'config') else {}
             }
-        
+
         return DebugInfoResponse(
             timestamp=datetime.now().isoformat(),
             process_info=process_info,
@@ -161,7 +158,7 @@ async def get_debug_info(current_user = Depends(get_current_user)):
             network_info=network_info,
             agent_state=agent_state
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting debug info: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting debug info: {str(e)}")
@@ -169,22 +166,20 @@ async def get_debug_info(current_user = Depends(get_current_user)):
 
 @router.get("/health-checks", response_model=List[HealthCheckResponse])
 async def get_health_checks(
-    component: Optional[str] = Query(None, description="Фильтр по компоненту"),
-    current_user = Depends(get_current_user)
+    component: Optional[str] = Query(None, description="Фильтр по компоненту")
 ):
     """
     Получение результатов проверок здоровья
-    
+
     Args:
         component: Фильтр по компоненту (опционально)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         List[HealthCheckResponse]: Результаты проверок здоровья
     """
     try:
         health_results = []
-        
+
         # Проверка основного процесса
         process_health = {
             'status': 'healthy',
@@ -200,7 +195,7 @@ async def get_health_checks(
             details=process_health['details'],
             timestamp=datetime.now().isoformat()
         ))
-        
+
         # Проверка агента (если доступен)
         if agent_core:
             agent_health = {
@@ -217,7 +212,7 @@ async def get_health_checks(
                 details=agent_health['details'],
                 timestamp=datetime.now().isoformat()
             ))
-        
+
         # Проверка когнитивного анализатора
         cognitive_health = {
             'status': 'healthy',
@@ -232,7 +227,7 @@ async def get_health_checks(
             details=cognitive_health['details'],
             timestamp=datetime.now().isoformat()
         ))
-        
+
         # Проверка движка адаптации (если доступен)
         if adaptation_engine:
             adaptation_health = {
@@ -249,7 +244,7 @@ async def get_health_checks(
                 details=adaptation_health['details'],
                 timestamp=datetime.now().isoformat()
             ))
-        
+
         # Проверка системы самодиагностики (если доступна)
         if self_monitoring:
             try:
@@ -276,13 +271,13 @@ async def get_health_checks(
                     details={'error': str(e)},
                     timestamp=datetime.now().isoformat()
                 ))
-        
+
         # Фильтрация по компоненту, если указан
         if component:
             health_results = [h for h in health_results if h.component == component]
-        
+
         return health_results
-        
+
     except Exception as e:
         logger.error(f"Error getting health checks: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting health checks: {str(e)}")
@@ -290,16 +285,14 @@ async def get_health_checks(
 
 @router.get("/performance-metrics", response_model=PerformanceMetricsResponse)
 async def get_performance_metrics(
-    hours: int = Query(1, description="Количество часов для анализа", ge=1, le=24),
-    current_user = Depends(get_current_user)
+    hours: int = Query(1, description="Количество часов для анализа", ge=1, le=24)
 ):
     """
     Получение метрик производительности
-    
+
     Args:
         hours: Количество часов для анализа (1-24)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         PerformanceMetricsResponse: Метрики производительности
     """
@@ -307,20 +300,20 @@ async def get_performance_metrics(
         # В реальной системе метрики будут собираться из соответствующих источников
         # Пока возвращаем симулированные данные
         cutoff_time = datetime.now() - timedelta(hours=hours)
-        
+
         # Симуляция данных производительности
         import random
         response_times = [random.uniform(0.5, 3.0) for _ in range(50)]
         throughput = random.uniform(10, 100)  # запросов в секунду
         error_rate = random.uniform(0.01, 0.1)  # 1-10% ошибок
-        
+
         resource_usage = {
             'cpu_percent': psutil.cpu_percent(),
             'memory_percent': psutil.virtual_memory().percent,
             'disk_percent': psutil.disk_usage('/').percent,
             'active_threads': len([t for t in asyncio.all_tasks() if not t.done()])
         }
-        
+
         return PerformanceMetricsResponse(
             timestamp=datetime.now().isoformat(),
             response_times=response_times,
@@ -328,7 +321,7 @@ async def get_performance_metrics(
             error_rate=error_rate,
             resource_usage=resource_usage
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting performance metrics: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting performance metrics: {str(e)}")
@@ -336,16 +329,14 @@ async def get_performance_metrics(
 
 @router.get("/trace-info/{trace_id}", response_model=TraceInfoResponse)
 async def get_trace_info(
-    trace_id: str,
-    current_user = Depends(get_current_user)
+    trace_id: str
 ):
     """
     Получение информации трассировки по ID
-    
+
     Args:
         trace_id: ID трассировки
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         TraceInfoResponse: Информация трассировки
     """
@@ -353,7 +344,7 @@ async def get_trace_info(
         # В реальной системе трассировка будет извлекаться из соответствующего хранилища
         # Пока возвращаем симулированные данные
         import random
-        
+
         steps = [
             {
                 'step_id': f'step_{i}',
@@ -364,16 +355,16 @@ async def get_trace_info(
             }
             for i in range(1, random.randint(3, 8))
         ]
-        
+
         total_duration = sum(step['duration'] for step in steps)
-        
+
         return TraceInfoResponse(
             trace_id=trace_id,
             steps=steps,
             duration=total_duration,
             status='completed'
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting trace info for {trace_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting trace info: {str(e)}")
@@ -384,19 +375,17 @@ async def get_logs(
     level: Optional[str] = Query(None, description="Уровень логов (DEBUG, INFO, WARNING, ERROR)"),
     module: Optional[str] = Query(None, description="Модуль для фильтрации"),
     limit: int = Query(100, description="Количество записей", ge=1, le=1000),
-    search: Optional[str] = Query(None, description="Поисковый запрос"),
-    current_user = Depends(get_current_user)
+    search: Optional[str] = Query(None, description="Поисковый запрос")
 ):
     """
     Получение логов системы
-    
+
     Args:
         level: Уровень логов для фильтрации
         module: Модуль для фильтрации
         limit: Количество записей
         search: Поисковый запрос
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         List[LogEntry]: Записи логов
     """
@@ -405,17 +394,17 @@ async def get_logs(
         # Пока возвращаем симулированные данные
         import random
         from datetime import timedelta
-        
+
         log_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR']
         modules = ['agent_core', 'cognitive_analyzer', 'adaptation_engine', 'api', 'memory_manager']
-        
+
         logs = []
         for i in range(limit):
             timestamp = (datetime.now() - timedelta(seconds=random.randint(0, 3600))).isoformat()
             log_level = random.choice(log_levels)
             module_name = random.choice(modules)
             message = f"Sample log message {i+1} for {module_name} at {log_level} level"
-            
+
             # Применение фильтров
             if level and level.upper() != log_level:
                 continue
@@ -423,7 +412,7 @@ async def get_logs(
                 continue
             if search and search.lower() not in message.lower():
                 continue
-                
+
             log_entry = LogEntry(
                 timestamp=timestamp,
                 level=log_level,
@@ -432,25 +421,22 @@ async def get_logs(
                 function=f'function_{random.randint(1, 10)}'
             )
             logs.append(log_entry)
-            
+
             if len(logs) >= limit:
                 break
-        
+
         return logs
-        
+
     except Exception as e:
         logger.error(f"Error getting logs: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting logs: {str(e)}")
 
 
 @router.get("/resource-usage")
-async def get_resource_usage(current_user = Depends(get_current_user)):
+async def get_resource_usage():
     """
     Получение информации об использовании ресурсов
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         Dict: Информация об использовании ресурсов
     """
@@ -460,7 +446,7 @@ async def get_resource_usage(current_user = Depends(get_current_user)):
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         network = psutil.net_io_counters()
-        
+
         resource_info = {
             'timestamp': datetime.now().isoformat(),
             'cpu': {
@@ -494,22 +480,19 @@ async def get_resource_usage(current_user = Depends(get_current_user)):
                 'connections': len(psutil.Process().connections()) if psutil.Process().connections() else 0
             }
         }
-        
+
         return resource_info
-        
+
     except Exception as e:
         logger.error(f"Error getting resource usage: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting resource usage: {str(e)}")
 
 
 @router.get("/system-status")
-async def get_system_status(current_user = Depends(get_current_user)):
+async def get_system_status():
     """
     Получение статуса системы
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         Dict: Статус системы
     """
@@ -540,39 +523,36 @@ async def get_system_status(current_user = Depends(get_current_user)):
                 'error_rate': 0.0         # В реальности нужно собирать
             }
         }
-        
+
         # Проверка общего статуса на основе индикаторов
         if (system_status['health_indicators']['cpu_usage'] > 90 or
             system_status['health_indicators']['memory_usage'] > 90 or
             system_status['health_indicators']['disk_usage'] > 95):
             system_status['overall_status'] = 'degraded'
-        
+
         return system_status
-        
+
     except Exception as e:
         logger.error(f"Error getting system status: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting system status: {str(e)}")
 
 
 @router.post("/trigger-garbage-collection")
-async def trigger_garbage_collection(current_user = Depends(get_current_user)):
+async def trigger_garbage_collection():
     """
     Ручной запуск сборщика мусора
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         Dict: Результат операции
     """
     try:
         import gc
-        
+
         # Сбор статистики до сборки
         before_stats = gc.get_stats()
         collected_objects = gc.collect()
         after_stats = gc.get_stats()
-        
+
         return {
             'success': True,
             'message': f'Garbage collection completed. Collected {collected_objects} objects',
@@ -580,20 +560,17 @@ async def trigger_garbage_collection(current_user = Depends(get_current_user)):
             'after_stats': after_stats,
             'timestamp': datetime.now().isoformat()
         }
-        
+
     except Exception as e:
         logger.error(f"Error triggering garbage collection: {e}")
         raise HTTPException(status_code=500, detail=f"Error triggering garbage collection: {str(e)}")
 
 
 @router.get("/active-tasks")
-async def get_active_tasks(current_user = Depends(get_current_user)):
+async def get_active_tasks():
     """
     Получение информации об активных задачах
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         Dict: Информация об активных задачах
     """
@@ -608,13 +585,13 @@ async def get_active_tasks(current_user = Depends(get_current_user)):
                     'created_at': getattr(task, '_source_traceback', [{}])[0].get('filename', 'unknown') if hasattr(task, '_source_traceback') else 'unknown'
                 }
                 tasks.append(task_info)
-        
+
         return {
             'total_tasks': len(tasks),
             'active_tasks': tasks,
             'timestamp': datetime.now().isoformat()
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting active tasks: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting active tasks: {str(e)}")
@@ -624,7 +601,7 @@ async def get_active_tasks(current_user = Depends(get_current_user)):
 def register_extended_monitoring_endpoints(main_app):
     """
     Регистрация расширенных эндпоинтов мониторинга в основном приложении
-    
+
     Args:
         main_app: Основное FastAPI приложение
     """

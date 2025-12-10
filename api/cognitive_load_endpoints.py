@@ -14,7 +14,7 @@ from agent.meta_cognitive.cognitive_load_analyzer import (
     CognitiveLoadMetrics, LoadLevel
 )
 from agent.core.agent_core import AgentCore
-from api.auth import get_current_user
+# from api.auth import get_current_user # Закомментирован для версии без аутентификации
 
 logger = logging.getLogger(__name__)
 
@@ -85,16 +85,14 @@ class RealTimeDataResponse(BaseModel):
 
 @router.post("/analyze", response_model=CognitiveLoadAnalysisResponse)
 async def analyze_cognitive_load(
-    metrics_request: CognitiveLoadMetricsRequest,
-    current_user = Depends(get_current_user)
+    metrics_request: CognitiveLoadMetricsRequest
 ):
     """
     Анализ когнитивной нагрузки на основе переданных метрик
-    
+
     Args:
         metrics_request: Метрики для анализа
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         CognitiveLoadAnalysisResponse: Результат анализа
     """
@@ -112,10 +110,10 @@ async def analyze_cognitive_load(
             resource_pressure=metrics_request.resource_pressure,
             timestamp=datetime.now()
         )
-        
+
         # Выполнение анализа
         analysis = await analyzer.analyze_cognitive_load(metrics)
-        
+
         return CognitiveLoadAnalysisResponse(
             load_level=analysis.load_level.value,
             load_score=analysis.load_score,
@@ -123,7 +121,7 @@ async def analyze_cognitive_load(
             recommendations=analysis.recommendations,
             timestamp=analysis.metrics.timestamp.isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error analyzing cognitive load: {e}")
         raise HTTPException(status_code=500, detail=f"Error analyzing cognitive load: {str(e)}")
@@ -131,22 +129,20 @@ async def analyze_cognitive_load(
 
 @router.get("/summary", response_model=LoadSummaryResponse)
 async def get_load_summary(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение сводки по когнитивной нагрузке за указанный период
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         LoadSummaryResponse: Сводка по нагрузке
     """
     try:
         summary = analyzer.get_load_summary(hours=hours)
-        
+
         return LoadSummaryResponse(
             period=summary['period'],
             total_measurements=summary['total_measurements'],
@@ -155,7 +151,7 @@ async def get_load_summary(
             load_distribution=summary['load_distribution'],
             trend_direction=summary['trend_direction']
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting load summary: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting load summary: {str(e)}")
@@ -163,22 +159,20 @@ async def get_load_summary(
 
 @router.get("/time-series", response_model=TimeSeriesDataResponse)
 async def get_time_series_data(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение данных временного ряда когнитивной нагрузки
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         TimeSeriesDataResponse: Данные временного ряда
     """
     try:
         data = visualizer.generate_time_series_data(hours=hours)
-        
+
         return TimeSeriesDataResponse(
             timestamps=data['timestamps'],
             load_scores=data['load_scores'],
@@ -187,55 +181,45 @@ async def get_time_series_data(
             memory_usage=data['memory_usage'],
             cpu_usage=data['cpu_usage']
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting time series data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting time series data: {str(e)}")
 
 
 @router.get("/distribution", response_model=DistributionDataResponse)
-async def get_distribution_data(
-    current_user = Depends(get_current_user)
-):
+async def get_distribution_data():
     """
     Получение данных распределения когнитивной нагрузки
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         DistributionDataResponse: Данные распределения
     """
     try:
         data = visualizer.generate_distribution_data()
-        
+
         return DistributionDataResponse(
             load_levels=data['load_levels'],
             counts=data['counts'],
             percentages=data['percentages']
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting distribution data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting distribution data: {str(e)}")
 
 
 @router.get("/real-time", response_model=RealTimeDataResponse)
-async def get_real_time_data(
-    current_user = Depends(get_current_user)
-):
+async def get_real_time_data():
     """
     Получение данных когнитивной нагрузки в реальном времени
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         RealTimeDataResponse: Данные в реальном времени
     """
     try:
         data = visualizer.generate_real_time_data()
-        
+
         return RealTimeDataResponse(
             current_load_score=data['current_load_score'],
             current_load_level=data['current_load_level'],
@@ -243,22 +227,17 @@ async def get_real_time_data(
             trend=data['trend'],
             recommendations=data['recommendations']
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting real-time data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting real-time data: {str(e)}")
 
 
 @router.get("/recommendations")
-async def get_cognitive_load_recommendations(
-    current_user = Depends(get_current_user)
-):
+async def get_cognitive_load_recommendations():
     """
     Получение рекомендаций по управлению когнитивной нагрузкой
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         List[str]: Рекомендации
     """
@@ -275,24 +254,19 @@ async def get_cognitive_load_recommendations(
                 "Нет данных для анализа нагрузки",
                 "Начните отправлять метрики для получения рекомендаций"
             ]
-        
+
         return {"recommendations": recommendations}
-        
+
     except Exception as e:
         logger.error(f"Error getting recommendations: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting recommendations: {str(e)}")
 
 
 @router.get("/health-indicators")
-async def get_cognitive_health_indicators(
-    current_user = Depends(get_current_user)
-):
+async def get_cognitive_health_indicators():
     """
     Получение индикаторов когнитивного здоровья
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         Dict: Индикаторы здоровья
     """
@@ -302,11 +276,11 @@ async def get_cognitive_health_indicators(
                 "status": "no_data",
                 "indicators": {}
             }
-        
+
         latest_metrics = analyzer.load_history[-1]
         current_score = analyzer.calculate_load_score(latest_metrics)
         current_level = analyzer.determine_load_level(current_score)
-        
+
         # Рассчитываем различные индикаторы
         indicators = {
             "load_level": current_level.value,
@@ -318,12 +292,12 @@ async def get_cognitive_health_indicators(
             "error_health": "good" if latest_metrics.error_rate < 0.1 else "poor",
             "complexity_health": "good" if latest_metrics.complexity_score < 0.6 else "poor"
         }
-        
+
         return {
             "status": "healthy" if current_level in [LoadLevel.LOW, LoadLevel.MEDIUM] else "unhealthy",
             "indicators": indicators
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting health indicators: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting health indicators: {str(e)}")
@@ -333,7 +307,7 @@ async def get_cognitive_health_indicators(
 def register_cognitive_load_endpoints(main_app):
     """
     Регистрация эндпоинтов когнитивной нагрузки в основном приложении
-    
+
     Args:
         main_app: Основное FastAPI приложение
     """

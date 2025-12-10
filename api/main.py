@@ -25,6 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Импорт базовых зависимостей и компонентов для health check
+from config import get_config
+from monitoring.health_check_system import health_registry
+from api.health_endpoints import HealthStatusResponse, HealthCheckResponse, HealthSummaryResponse
+
 # Простой health endpoint
 @app.get("/health", response_model=HealthStatusResponse)
 async def health_check():
@@ -110,11 +115,6 @@ async def root():
         "health": "/health"
     }
 
-# Импорт базовых зависимостей и компонентов для health check
-from config import get_config
-from monitoring.health_check_system import health_registry
-from api.health_endpoints import HealthStatusResponse, HealthCheckResponse, HealthSummaryResponse
-
 # Попытка импорта дополнительных компонентов
 try:
     logger.info("🔄 Attempting to load advanced features...")
@@ -122,7 +122,7 @@ try:
     # Настройка rate limiting
     try:
         from api.rate_limiter import setup_default_rate_limits
-        setup_default_rate_limits(app)
+        setup_default_rate_limits()  # Вызов без аргументов
         logger.info("✅ Rate limiting configured")
     except Exception as e:
         logger.warning(f"⚠️ Failed to setup rate limiting: {e}")
@@ -167,12 +167,12 @@ try:
         logger.warning(f"⚠️ Failed to register visualization endpoints: {e}")
 
     # Попытка загрузки аутентификации
-    try:
-        from api.auth import auth_router
-        app.include_router(auth_router, prefix="/auth", tags=["authentication"])
-        logger.info("✅ Authentication router registered")
-    except Exception as e:
-        logger.warning(f"⚠️ Failed to register authentication router: {e}")
+    # try:
+    #     from api.auth import auth_router
+    #     app.include_router(auth_router, prefix="/auth", tags=["authentication"])
+    #     logger.info("✅ Authentication router registered")
+    # except Exception as e:
+    #     logger.warning(f"⚠️ Failed to register authentication router: {e}")
 
     # Попытка загрузки GraphQL
     try:

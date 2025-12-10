@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from agent.meta_cognitive.cognitive_load_analyzer import CognitiveLoadVisualizer, CognitiveLoadAnalyzer
 from agent.learning.adaptation_engine import AdaptationEngine
-from api.auth import get_current_user
+# from api.auth import get_current_user  # Закомментирован для версии без аутентификации
 
 logger = logging.getLogger(__name__)
 
@@ -49,22 +49,20 @@ adaptation_engine: AdaptationEngine = None  # Будет инициализир�
 
 @router.get("/cognitive-load-time-series", response_model=VisualizationDataResponse)
 async def get_cognitive_load_time_series(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение временного ряда когнитивной нагрузки
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         VisualizationDataResponse: Данные временного ряда
     """
     try:
         data = visualizer.generate_time_series_data(hours=hours)
-        
+
         return VisualizationDataResponse(
             visualization_type="time_series",
             data=data,
@@ -75,26 +73,23 @@ async def get_cognitive_load_time_series(
             },
             timestamp=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting cognitive load time series: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting time series data: {str(e)}")
 
 
 @router.get("/cognitive-load-distribution", response_model=VisualizationDataResponse)
-async def get_cognitive_load_distribution(current_user = Depends(get_current_user)):
+async def get_cognitive_load_distribution():
     """
     Получение распределения когнитивной нагрузки
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         VisualizationDataResponse: Данные распределения
     """
     try:
         data = visualizer.generate_distribution_data()
-        
+
         return VisualizationDataResponse(
             visualization_type="distribution",
             data=data,
@@ -104,26 +99,23 @@ async def get_cognitive_load_distribution(current_user = Depends(get_current_use
             },
             timestamp=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting cognitive load distribution: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting distribution data: {str(e)}")
 
 
 @router.get("/real-time-cognitive-load", response_model=VisualizationDataResponse)
-async def get_real_time_cognitive_load(current_user = Depends(get_current_user)):
+async def get_real_time_cognitive_load():
     """
     Получение данных когнитивной нагрузки в реальном времени
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         VisualizationDataResponse: Данные в реальном времени
     """
     try:
         data = visualizer.generate_real_time_data()
-        
+
         return VisualizationDataResponse(
             visualization_type="real_time",
             data=data,
@@ -133,7 +125,7 @@ async def get_real_time_cognitive_load(current_user = Depends(get_current_user))
             },
             timestamp=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting real-time cognitive load: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting real-time data: {str(e)}")
@@ -141,50 +133,45 @@ async def get_real_time_cognitive_load(current_user = Depends(get_current_user))
 
 @router.get("/advanced-cognitive-visualization", response_model=VisualizationDataResponse)
 async def get_advanced_cognitive_visualization(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение расширенных данных визуализации когнитивной нагрузки
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         VisualizationDataResponse: Расширенные данные визуализации
     """
     try:
         # Используем метод из обновленного CognitiveLoadVisualizer
         advanced_data = visualizer.generate_advanced_visualization_data(hours=hours)
-        
+
         return VisualizationDataResponse(
             visualization_type="advanced",
             data=advanced_data,
             metadata={
                 "time_range_hours": hours,
                 "analysis_types": [
-                    "time_series", "distribution", "peak_analysis", 
+                    "time_series", "distribution", "peak_analysis",
                     "trend_analysis", "correlation_analysis", "prediction"
                 ],
                 "total_data_points": len(advanced_data['time_series'])
             },
             timestamp=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting advanced cognitive visualization: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting advanced visualization data: {str(e)}")
 
 
 @router.get("/adaptation-history-chart", response_model=ChartDataResponse)
-async def get_adaptation_history_chart(current_user = Depends(get_current_user)):
+async def get_adaptation_history_chart():
     """
     Получение данных для диаграммы истории адаптаций
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         ChartDataResponse: Данные для диаграммы
     """
@@ -200,10 +187,10 @@ async def get_adaptation_history_chart(current_user = Depends(get_current_user))
                 }],
                 options={}
             )
-        
+
         # Получаем историю адаптаций
         history = adaptation_engine.get_adaptation_history(limit=50)
-        
+
         if not history:
             return ChartDataResponse(
                 chart_type="bar",
@@ -215,26 +202,26 @@ async def get_adaptation_history_chart(current_user = Depends(get_current_user))
                 }],
                 options={}
             )
-        
+
         # Подготавливаем данные для диаграммы
         labels = [item['created_at'] for item in history]
         adaptation_types = [item['type'] for item in history]
-        
+
         # Подсчитываем количество адаптаций по типам
         type_counts = {}
         for ad_type in adaptation_types:
             type_counts[ad_type] = type_counts.get(ad_type, 0) + 1
-        
+
         # Формируем наборы данных
         datasets = [{
             "label": "Adaptation Count",
             "data": list(type_counts.values()),
             "backgroundColor": [
-                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", 
+                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
                 "#9966FF", "#FF9F40", "#FF6384", "#C9CBCF"
             ]
         }]
-        
+
         return ChartDataResponse(
             chart_type="doughnut",
             labels=list(type_counts.keys()),
@@ -244,7 +231,7 @@ async def get_adaptation_history_chart(current_user = Depends(get_current_user))
                 "maintainAspectRatio": False
             }
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting adaptation history chart: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting adaptation chart: {str(e)}")
@@ -252,16 +239,14 @@ async def get_adaptation_history_chart(current_user = Depends(get_current_user))
 
 @router.get("/performance-trend-chart", response_model=ChartDataResponse)
 async def get_performance_trend_chart(
-    days: int = Query(30, description="Количество дней для анализа", ge=1, le=365),
-    current_user = Depends(get_current_user)
+    days: int = Query(30, description="Количество дней для анализа", ge=1, le=365)
 ):
     """
     Получение данных для диаграммы тренда производительности
-    
+
     Args:
         days: Количество дней для анализа (1-365)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         ChartDataResponse: Данные для диаграммы тренда
     """
@@ -270,21 +255,21 @@ async def get_performance_trend_chart(
         # В реальности эти данные будут извлекаться из соответствующих источников
         import random
         from datetime import timedelta
-        
+
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
-        
+
         dates = []
         performance_scores = []
         load_scores = []
-        
+
         current_date = start_date
         while current_date <= end_date:
             dates.append(current_date.strftime("%Y-%m-%d"))
             performance_scores.append(round(random.uniform(0.4, 1.0), 2))
             load_scores.append(round(random.uniform(0.1, 0.9), 2))
             current_date += timedelta(days=1)
-        
+
         datasets = [
             {
                 "label": "Performance Score",
@@ -303,7 +288,7 @@ async def get_performance_trend_chart(
                 "fill": False
             }
         ]
-        
+
         return ChartDataResponse(
             chart_type="line",
             labels=dates,
@@ -319,27 +304,24 @@ async def get_performance_trend_chart(
                 }
             }
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting performance trend chart: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting performance trend chart: {str(e)}")
 
 
 @router.get("/dashboard-data", response_model=DashboardDataResponse)
-async def get_dashboard_data(current_user = Depends(get_current_user)):
+async def get_dashboard_data():
     """
     Получение данных для дашборда
-    
-    Args:
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         DashboardDataResponse: Данные для дашборда
     """
     try:
         # Собираем данные для различных виджетов дашборда
         widgets = []
-        
+
         # Виджет: Текущая когнитивная нагрузка
         real_time_data = visualizer.generate_real_time_data()
         widgets.append({
@@ -351,7 +333,7 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
             "status": real_time_data['current_load_level'],
             "trend": real_time_data['trend']
         })
-        
+
         # Виджет: Распределение нагрузки
         distribution_data = visualizer.generate_distribution_data()
         widgets.append({
@@ -363,7 +345,7 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
                 "values": distribution_data['counts']
             }
         })
-        
+
         # Виджет: Активные адаптации
         if adaptation_engine:
             active_adaptations = adaptation_engine.get_active_adaptations()
@@ -382,7 +364,7 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
                 "value": 0,
                 "description": "Система адаптации не инициализирована"
             })
-        
+
         # Виджет: Рекомендации
         recommendations = []
         if real_time_data['current_load_level'] == 'high' or real_time_data['current_load_level'] == 'critical':
@@ -391,14 +373,14 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
             recommendations.append("Наблюдается рост нагрузки - мониторьте систему")
         if not recommendations:
             recommendations.append("Система работает в нормальном режиме")
-            
+
         widgets.append({
             "id": "recommendations",
             "type": "list",
             "title": "Рекомендации",
             "items": recommendations
         })
-        
+
         # Макет дашборда
         layout = {
             "grid_columns": 12,
@@ -409,13 +391,13 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
                 {"id": "recommendations", "position": {"x": 8, "y": 1, "w": 4, "h": 1}}
             ]
         }
-        
+
         return DashboardDataResponse(
             widgets=widgets,
             layout=layout,
             last_updated=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting dashboard data: {str(e)}")
@@ -423,16 +405,14 @@ async def get_dashboard_data(current_user = Depends(get_current_user)):
 
 @router.get("/correlation-heatmap", response_model=VisualizationDataResponse)
 async def get_correlation_heatmap(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение данных для тепловой карты корреляций
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         VisualizationDataResponse: Данные тепловой карты
     """
@@ -440,13 +420,13 @@ async def get_correlation_heatmap(
         # Используем метод из обновленного CognitiveLoadVisualizer
         advanced_data = visualizer.generate_advanced_visualization_data(hours=hours)
         correlation_data = advanced_data.get('correlation_analysis', {})
-        
+
         # Подготавливаем данные для тепловой карты
         metrics = list(set(
             [key.split('_vs_')[0].replace('load_', '') for key in correlation_data.keys() if 'vs' in key] +
             [key.split('_vs_')[1].replace('load_', '') for key in correlation_data.keys() if 'vs' in key]
         ))
-        
+
         # Создаем матрицу корреляций
         matrix = []
         for row_metric in metrics:
@@ -461,13 +441,13 @@ async def get_correlation_heatmap(
                     corr_value = correlation_data.get(corr_key1, correlation_data.get(corr_key2, 0))
                     row.append(corr_value)
             matrix.append(row)
-        
+
         heatmap_data = {
             "metrics": metrics,
             "correlation_matrix": matrix,
             "values": [list(row) for row in matrix]
         }
-        
+
         return VisualizationDataResponse(
             visualization_type="correlation_heatmap",
             data=heatmap_data,
@@ -478,7 +458,7 @@ async def get_correlation_heatmap(
             },
             timestamp=datetime.now().isoformat()
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting correlation heatmap: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting correlation heatmap: {str(e)}")
@@ -486,16 +466,14 @@ async def get_correlation_heatmap(
 
 @router.get("/prediction-chart", response_model=ChartDataResponse)
 async def get_prediction_chart(
-    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168),
-    current_user = Depends(get_current_user)
+    hours: int = Query(24, description="Количество часов для анализа", ge=1, le=168)
 ):
     """
     Получение данных для диаграммы предсказаний
-    
+
     Args:
         hours: Количество часов для анализа (1-168)
-        current_user: Аутентифицированный пользователь
-        
+
     Returns:
         ChartDataResponse: Данные для диаграммы предсказаний
     """
@@ -503,7 +481,7 @@ async def get_prediction_chart(
         # Используем метод из обновленного CognitiveLoadVisualizer
         advanced_data = visualizer.generate_advanced_visualization_data(hours=hours)
         prediction_data = advanced_data.get('prediction_data', [])
-        
+
         if not prediction_data:
             # Если нет предсказаний, возвращаем пустую диаграмму
             return ChartDataResponse(
@@ -517,11 +495,11 @@ async def get_prediction_chart(
                 }],
                 options={}
             )
-        
+
         # Подготавливаем данные для диаграммы
         time_labels = [f"+{item['time_offset_minutes']}min" for item in prediction_data]
         predicted_scores = [item['predicted_load_score'] for item in prediction_data]
-        
+
         datasets = [{
             "label": "Predicted Cognitive Load",
             "data": predicted_scores,
@@ -530,7 +508,7 @@ async def get_prediction_chart(
             "tension": 0.4,
             "fill": True
         }]
-        
+
         return ChartDataResponse(
             chart_type="line",
             labels=time_labels,
@@ -546,7 +524,7 @@ async def get_prediction_chart(
                 }
             }
         )
-        
+
     except Exception as e:
         logger.error(f"Error getting prediction chart: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting prediction chart: {str(e)}")
@@ -556,7 +534,7 @@ async def get_prediction_chart(
 def register_visualization_endpoints(main_app):
     """
     Регистрация эндпоинтов визуализации в основном приложении
-    
+
     Args:
         main_app: Основное FastAPI приложение
     """
