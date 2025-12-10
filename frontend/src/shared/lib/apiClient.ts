@@ -139,7 +139,7 @@ class ApiClient {
 
 // Экземпляр API клиента по умолчанию
 const apiClient = new ApiClient({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
+  baseUrl: import.meta.env.VITE_API_BASE_URL || '/api'
 });
 
 export { ApiClient, apiClient };

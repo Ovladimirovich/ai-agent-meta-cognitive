@@ -74,12 +74,12 @@ location /api {
 
 **`.env.production`**:
 ```
-VITE_API_BASE_URL=https://ovladimirovich.github.io/api
+VITE_API_BASE_URL=/api
 ```
 
 **`.env.example`**:
 ```
-VITE_API_BASE_URL=https://ovladimirovich.github.io/api
+VITE_API_BASE_URL=/api
 ```
 
 ### 3. Конфигурация Vite (`vite.config.ts`)
@@ -89,7 +89,7 @@ VITE_API_BASE_URL=https://ovladimirovich.github.io/api
 ```typescript
 proxy: {
  '/api': {
-    target: 'https://ovladimirovich.github.io/api',
+    target: 'http://ai-agent:8000/api',
     changeOrigin: true,
     secure: false,
   }

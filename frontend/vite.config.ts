@@ -38,7 +38,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://ovladimirovich.github.io/api',
+        target: 'http://ai-agent:8000/api',
         changeOrigin: true,
         secure: false,
       }
