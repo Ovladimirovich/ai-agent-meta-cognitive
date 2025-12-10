@@ -32,7 +32,7 @@ class AgentCore:
 
         # Инициализация компонентов
         self.state_manager = StateManager()
-        self.tool_orchestrator = ToolOrchestrator(config.tool_timeout)
+        self.tool_orchestrator = ToolOrchestrator(config.agent_tool_timeout)
         self.memory_manager = MemoryManager(config.max_memory_entries) if config.enable_memory else None
         self.query_analyzer = QueryAnalyzer()
         self.confidence_calculator = ConfidenceCalculator()
