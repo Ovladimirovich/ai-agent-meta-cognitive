@@ -52,6 +52,18 @@ export interface HealthStatus {
   issues_count: number;
   last_check: string;
   details?: Record<string, any>;
+  // Добавляем когнитивные метрики, если они есть в ответе
+  cognitive_metrics?: CognitiveHealthData;
+}
+
+// Типы для когнитивного здоровья
+export interface CognitiveHealthData {
+  cognitiveLoad: number;
+  confidenceLevel: number;
+  processingSpeed: number;
+  memoryUtilization: number;
+  attentionSpan: number;
+  decisionAccuracy: number;
 }
 
 // Типы для метрик обучения

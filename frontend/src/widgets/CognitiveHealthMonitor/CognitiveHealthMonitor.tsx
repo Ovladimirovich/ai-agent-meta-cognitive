@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRealtimeData } from '../../widgets/RealtimeDataProvider/RealtimeDataProvider';
 import { apiClient } from '@/shared/lib/apiClient';
 import { useQuery } from '@tanstack/react-query';
+import { CognitiveHealthData } from '@/shared/types/api';
 
 interface CognitiveMetric {
   name: string;
@@ -9,15 +10,6 @@ interface CognitiveMetric {
   max: number;
   description: string;
   status: 'excellent' | 'good' | 'average' | 'poor';
-}
-
-interface CognitiveHealthData {
-  cognitiveLoad: number;
-  confidenceLevel: number;
-  processingSpeed: number;
-  memoryUtilization: number;
-  attentionSpan: number;
-  decisionAccuracy: number;
 }
 
 interface CognitiveHealthMonitorProps {
@@ -89,7 +81,7 @@ const CognitiveHealthMonitor: React.FC<CognitiveHealthMonitorProps> = ({
   }, []);
 
   // Если когнитивные данные доступны из WebSocket, используем их
-  const currentHealthData = cognitiveData ? cognitiveData : (healthStatus as any)?.details?.cognitiveMetrics || initialData;
+  const currentHealthData = cognitiveData ? cognitiveData : (healthStatus as any)?.cognitive_metrics || (healthStatus as any)?.details?.cognitiveMetrics || initialData;
 
   // Если нет данных, показываем заглушку
   if (isLoading || !currentHealthData) {

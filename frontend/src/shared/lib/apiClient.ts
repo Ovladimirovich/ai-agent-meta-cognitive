@@ -103,8 +103,10 @@ class ApiClient {
   /**
    * Метод для получения статуса здоровья системы
    */
-  async getHealthStatus<T>(): Promise<T> {
-    return this.get<T>('/health');
+  async getHealthStatus<T = import('@/shared/types/api').HealthStatus>(): Promise<T> {
+    // Используем правильный путь к эндпоинту в зависимости от окружения
+    const endpoint = this.config.baseUrl.includes('/api') ? '/health' : '/api/health';
+    return this.get<T>(endpoint);
   }
 
   /**
@@ -139,7 +141,9 @@ class ApiClient {
 
 // Экземпляр API клиента по умолчанию
 const apiClient = new ApiClient({
-  baseUrl: (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '') ? '/api' : (process.env.VITE_API_BASE_URL || 'http://localhost:8000/api')
+  baseUrl: (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '')
+    ? (process.env.VITE_API_BASE_URL || 'https://ai-agent-meta-cognitive.onrender.com/api') // Используем внешний бэкенд для продакшена
+    : (process.env.VITE_API_BASE_URL || 'http://localhost:8000/api')
 });
 
 export { ApiClient, apiClient };
