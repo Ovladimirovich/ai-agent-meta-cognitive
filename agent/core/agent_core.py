@@ -36,7 +36,7 @@ class AgentCore:
         self.memory_manager = MemoryManager(config.agent_max_memory_entries) if config.enable_memory else None
         self.query_analyzer = QueryAnalyzer()
         self.confidence_calculator = ConfidenceCalculator()
-        self.reasoning_tracer = ReasoningTracer() if config.enable_reasoning_trace else None
+        self.reasoning_tracer = ReasoningTracer() if config.agent_enable_reasoning_trace else None
 
         # Инициализация LLM клиента (ленивая загрузка)
         self.llm_client = None
