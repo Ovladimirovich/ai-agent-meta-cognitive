@@ -2,12 +2,12 @@ name: Security Scanning
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
     # Run security scans weekly on Sundays at 1 AM UTC
-    - cron: '0 1 * * 0'
+    - cron: "0 1 * * 0"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
           configFile: p/r2c-security-audit
 
       - name: Upload security results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-sast-results
           path: |
@@ -61,7 +61,7 @@ jobs:
           safety check --json > safety-report.json || true
 
       - name: Upload dependency scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-scan-results
           path: |
@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: actions/docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
         uses: docker/build-push-action@v5
@@ -94,20 +94,20 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ai-agent-meta-cognitive:security-scan'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          image-ref: "ai-agent-meta-cognitive:security-scan"
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-fs-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-fs-results.sarif"
 
       - name: Upload container scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-scan-results
           path: |
@@ -123,13 +123,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for better scanning
+          fetch-depth: 0 # Fetch full history for better scanning
 
       - name: Scan for secrets with Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # Optional for enterprise features
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Optional for enterprise features
 
       - name: Scan with TruffleHog
         uses: trufflesecurity/truffleHog@main
@@ -146,7 +146,7 @@ jobs:
 
     steps:
       - name: Download all security scan results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ./security-results
 
@@ -155,7 +155,7 @@ jobs:
           echo "Checking security scan results..."
           echo "Artifacts downloaded to: ./security-results"
           find ./security-results -type f -name "*.json" -exec cat {} \; | head -50
-          
+
           # In a real implementation, you would parse the results and fail if
           # critical vulnerabilities are found above the threshold
           echo "Security quality gate passed - no critical issues found above threshold"

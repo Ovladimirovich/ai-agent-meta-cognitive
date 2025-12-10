@@ -23,18 +23,18 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
+        description: "Target environment"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - development
           - staging
           - production
       deploy_strategy:
-        description: 'Deployment strategy'
+        description: "Deployment strategy"
         required: false
-        default: 'rolling'
+        default: "rolling"
         type: choice
         options:
           - rolling
@@ -53,27 +53,27 @@ jobs:
         run: |
           ENV=${{ inputs.environment || github.event.inputs.environment }}
           STRATEGY=${{ inputs.deploy_strategy || github.event.inputs.deploy_strategy || 'rolling' }}
-          
+
           if [[ "$ENV" != "development" && "$ENV" != "staging" && "$ENV" != "production" ]]; then
             echo "Invalid environment: $ENV"
             exit 1
           fi
-          
+
           if [[ "$STRATEGY" != "rolling" && "$STRATEGY" != "blue-green" && "$STRATEGY" != "canary" ]]; then
             echo "Invalid deployment strategy: $STRATEGY"
             exit 1
           fi
-          
+
           echo "environment=$ENV" >> $GITHUB_OUTPUT
           echo "deploy_strategy=$STRATEGY" >> $GITHUB_OUTPUT
-          
+
           echo "Validated environment: $ENV with strategy: $STRATEGY"
 
   deploy:
     runs-on: ubuntu-latest
     needs: validate
     environment: ${{ needs.validate.outputs.environment }}
-    concurrency: 
+    concurrency:
       group: deploy-${{ needs.validate.outputs.environment }}
       cancel-in-progress: false
 
@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: actions/docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -105,7 +105,7 @@ jobs:
       - name: Set up Kubernetes
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest'
+          version: "latest"
 
       - name: Configure kubectl
         run: |
@@ -117,9 +117,9 @@ jobs:
         run: |
           ENV=${{ needs.validate.outputs.environment }}
           STRATEGY=${{ needs.validate.outputs.deploy_strategy }}
-          
+
           echo "Deploying to $ENV using $STRATEGY strategy"
-          
+
           case $STRATEGY in
             "rolling")
               echo "Performing rolling deployment"
@@ -134,7 +134,7 @@ jobs:
               # Implementation would depend on your specific setup
               kubectl set image deployment/ai-agent-deployment-${ENV}-green ai-agent=${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ needs.validate.outputs.environment }} -n $ENV
               kubectl rollout status deployment/ai-agent-deployment-${ENV}-green -n $ENV --timeout=10m
-              
+
               # Switch service to point to green deployment
               kubectl patch service ai-agent-service -n $ENV -p '{"spec":{"selector":{"version":"green"}}}'
               ;;
@@ -143,7 +143,7 @@ jobs:
               # For canary, we deploy a small subset first and gradually increase
               kubectl set image deployment/ai-agent-canary-deployment ai-agent=${{ secrets.DOCKER_USERNAME }}/ai-agent-meta-cognitive:${{ needs.validate.outputs.environment }} -n $ENV
               kubectl rollout status deployment/ai-agent-canary-deployment -n $ENV --timeout=10m
-              
+
               # Gradually scale up the canary deployment
               kubectl scale deployment ai-agent-canary-deployment -n $ENV --replicas=2
               sleep 60
@@ -155,14 +155,14 @@ jobs:
         run: |
           ENV=${{ needs.validate.outputs.environment }}
           echo "Running post-deployment tests for $ENV environment"
-          
+
           # Wait for deployment to be ready
           sleep 30
-          
+
           # Check if the service is responding
           kubectl get pods -n $ENV
           kubectl get services -n $ENV
-          
+
           # Run health check
           POD_NAME=$(kubectl get pods -n $ENV -l app=ai-agent -o jsonpath='{.items[0].metadata.name}')
           kubectl exec $POD_NAME -n $ENV -- curl -f http://localhost:8000/health
@@ -177,7 +177,7 @@ jobs:
       - name: Set up Kubernetes
         uses: azure/setup-kubectl@v3
         with:
-          version: 'latest'
+          version: "latest"
 
       - name: Configure kubectl
         run: |
@@ -189,10 +189,10 @@ jobs:
         run: |
           ENV=${{ needs.validate.outputs.environment }}
           echo "Rolling back deployment in $ENV environment"
-          
+
           # Rollback to previous deployment
           kubectl rollout undo deployment/ai-agent-deployment -n $ENV
-          
+
           # Wait for rollback to complete
           kubectl rollout status deployment/ai-agent-deployment -n $ENV --timeout=10m
 
@@ -200,7 +200,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: failure
-          text: '🚨 Rollback executed in ${{ needs.validate.outputs.environment }} environment'
+          text: "🚨 Rollback executed in ${{ needs.validate.outputs.environment }} environment"
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -214,7 +214,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: success
-          text: '✅ Deployment successful in ${{ needs.validate.outputs.environment }} environment using ${{ needs.validate.outputs.deploy_strategy }} strategy'
+          text: "✅ Deployment successful in ${{ needs.validate.outputs.environment }} environment using ${{ needs.validate.outputs.deploy_strategy }} strategy"
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
