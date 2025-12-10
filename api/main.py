@@ -26,19 +26,78 @@ app.add_middleware(
 )
 
 # Простой health endpoint
-@app.get("/health")
+@app.get("/health", response_model=HealthStatusResponse)
 async def health_check():
     """Проверка здоровья системы"""
-    return JSONResponse(
-        status_code=200,
-        content={
-            "status": "healthy",
-            "health_score": 1.0,
-            "issues_count": 0,
-            "last_check": datetime.now().isoformat(),
-            "message": "Basic health check - service is running"
-        }
-    )
+    try:
+        # Запускаем все проверки
+        results = await health_registry.run_all()
+
+        # Получаем сводку
+        summary = health_registry.get_summary(results)
+
+        # Рассчитываем health score
+        total_checks = summary['total_checks']
+        if total_checks > 0:
+            health_score = (
+                (summary['healthy'] * 1.0 + summary['degraded'] * 0.5) / total_checks
+            )
+        else:
+            health_score = 1.0  # Если нет проверок, считаем систему здоровой
+
+        return HealthStatusResponse(
+            status=summary['overall_status'],
+            health_score=round(health_score, 2),
+            issues_count=summary['degraded'] + summary['unhealthy'],
+            last_check=summary['timestamp'],
+            details=summary
+        )
+    except Exception as e:
+        logger.error(f"Error getting health status: {e}")
+        return HealthStatusResponse(
+            status="unhealthy",
+            health_score=0.0,
+            issues_count=1,
+            last_check=datetime.now().isoformat(),
+            details={"error": str(e)}
+        )
+
+# Дополнительный health endpoint для API (совместимость с фронтендом)
+@app.get("/api/health", response_model=HealthStatusResponse)
+async def api_health_check():
+    """Проверка здоровья системы (совместимость с API)"""
+    try:
+        # Запускаем все проверки
+        results = await health_registry.run_all()
+
+        # Получаем сводку
+        summary = health_registry.get_summary(results)
+
+        # Рассчитываем health score
+        total_checks = summary['total_checks']
+        if total_checks > 0:
+            health_score = (
+                (summary['healthy'] * 1.0 + summary['degraded'] * 0.5) / total_checks
+            )
+        else:
+            health_score = 1.0  # Если нет проверок, считаем систему здоровой
+
+        return HealthStatusResponse(
+            status=summary['overall_status'],
+            health_score=round(health_score, 2),
+            issues_count=summary['degraded'] + summary['unhealthy'],
+            last_check=summary['timestamp'],
+            details=summary
+        )
+    except Exception as e:
+        logger.error(f"Error getting health status: {e}")
+        return HealthStatusResponse(
+            status="unhealthy",
+            health_score=0.0,
+            issues_count=1,
+            last_check=datetime.now().isoformat(),
+            details={"error": str(e)}
+        )
 
 # Корневой endpoint
 @app.get("/")
@@ -51,12 +110,14 @@ async def root():
         "health": "/health"
     }
 
+# Импорт базовых зависимостей и компонентов для health check
+from config import get_config
+from monitoring.health_check_system import health_registry
+from api.health_endpoints import HealthStatusResponse, HealthCheckResponse, HealthSummaryResponse
+
 # Попытка импорта дополнительных компонентов
 try:
     logger.info("🔄 Attempting to load advanced features...")
-
-    # Импорт базовых зависимостей
-    from config import get_config
 
     # Настройка rate limiting
     try:
@@ -122,6 +183,34 @@ try:
         logger.info("✅ GraphQL router registered")
     except Exception as e:
         logger.warning(f"⚠️ Failed to register GraphQL router: {e}")
+
+    # Подключение расширенных эндпоинтов здоровья
+    try:
+        from api.health_endpoints import register_health_endpoints, initialize_health_checks
+        register_health_endpoints(app)
+
+        # Инициализируем базовые проверки без агента
+        initialize_health_checks()  # Инициализируем базовые проверки
+        logger.info("✅ Health endpoints registered and initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to register health endpoints: {e}")
+
+    # Попытка инициализации с агентом (опционально)
+    try:
+        from agent.core.agent_core import AgentCore
+
+        # Создаем конфигурацию агента и инициализируем его для health checks
+        agent_config = get_config()
+        agent_core = AgentCore(agent_config)
+
+        # Повторная инициализация health checks с агентом
+        from api.health_endpoints import initialize_health_checks
+        initialize_health_checks(agent_core)
+        logger.info("✅ Health checks initialized with AgentCore")
+    except ImportError:
+        logger.info("💡 AgentCore not available, running health checks without agent monitoring")
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to initialize health checks with AgentCore: {e}")
 
     logger.info("🎉 Advanced features loaded successfully")
 

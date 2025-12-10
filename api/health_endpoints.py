@@ -13,8 +13,8 @@ import psutil
 import os
 
 from monitoring.health_check_system import (
-    health_registry, 
-    HealthStatus, 
+    health_registry,
+    HealthStatus,
     HealthCheckResult,
     create_system_health_checker,
     create_agent_health_checker
@@ -26,7 +26,7 @@ from agent.core.agent_core import AgentCore
 
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/health", tags=["health"])
+router = APIRouter(prefix="/api/health", tags=["health"])
 
 
 class HealthCheckResponse(BaseModel):
@@ -81,20 +81,20 @@ class ActiveAlertsResponse(BaseModel):
 async def get_health_status(current_user = Depends(get_current_user)):
     """
     Получение общего статуса здоровья системы
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         HealthStatusResponse: Статус здоровья системы
     """
     try:
         # Запускаем все проверки
         results = await health_registry.run_all()
-        
+
         # Получаем сводку
         summary = health_registry.get_summary(results)
-        
+
         # Рассчитываем health score
         total_checks = summary['total_checks']
         if total_checks > 0:
@@ -103,7 +103,7 @@ async def get_health_status(current_user = Depends(get_current_user)):
             )
         else:
             health_score = 1.0  # Если нет проверок, считаем систему здоровой
-        
+
         return HealthStatusResponse(
             status=summary['overall_status'],
             health_score=round(health_score, 2),
@@ -120,16 +120,16 @@ async def get_health_status(current_user = Depends(get_current_user)):
 async def get_detailed_health(current_user = Depends(get_current_user)):
     """
     Получение детализированной информации о здоровье
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         Dict[str, HealthCheckResponse]: Детализированные результаты проверок
     """
     try:
         results = await health_registry.run_all()
-        
+
         detailed_results = {}
         for name, result in results.items():
             detailed_results[name] = HealthCheckResponse(
@@ -140,7 +140,7 @@ async def get_detailed_health(current_user = Depends(get_current_user)):
                 details=result.details,
                 timestamp=result.timestamp.isoformat()
             )
-        
+
         return detailed_results
     except Exception as e:
         logger.error(f"Error getting detailed health: {e}")
@@ -151,17 +151,17 @@ async def get_detailed_health(current_user = Depends(get_current_user)):
 async def get_health_summary(current_user = Depends(get_current_user)):
     """
     Получение сводки по здоровью системы
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         HealthSummaryResponse: Сводка по здоровью системы
     """
     try:
         results = await health_registry.run_all()
         summary = health_registry.get_summary(results)
-        
+
         return HealthSummaryResponse(**summary)
     except Exception as e:
         logger.error(f"Error getting health summary: {e}")
@@ -172,10 +172,10 @@ async def get_health_summary(current_user = Depends(get_current_user)):
 async def get_system_health(current_user = Depends(get_current_user)):
     """
     Получение информации о системном здоровье
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         SystemHealthResponse: Информация о системном здоровье
     """
@@ -187,7 +187,7 @@ async def get_system_health(current_user = Depends(get_current_user)):
         load_avg = list(psutil.getloadavg()) if hasattr(psutil, 'getloadavg') else [0, 0, 0]
         processes_count = len(psutil.pids())
         network_connections = len(psutil.net_connections())
-        
+
         return SystemHealthResponse(
             cpu_percent=cpu_percent,
             memory_percent=memory.percent,
@@ -206,10 +206,10 @@ async def get_system_health(current_user = Depends(get_current_user)):
 async def get_agent_health(current_user = Depends(get_current_user)):
     """
     Получение информации о здоровье AI агента
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         HealthCheckResponse: Информация о здоровье агента
     """
@@ -217,7 +217,7 @@ async def get_agent_health(current_user = Depends(get_current_user)):
         # В реальной системе здесь будет проверка состояния агента
         # Для демонстрации создаем временную проверку
         result = await create_system_health_checker().check()
-        
+
         return HealthCheckResponse(
             name=result.name,
             status=result.status.value,
@@ -235,34 +235,34 @@ async def get_agent_health(current_user = Depends(get_current_user)):
 async def get_health_metrics(current_user = Depends(get_current_user)):
     """
     Получение метрик здоровья системы
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         Dict[str, Any]: Метрики здоровья системы
     """
     try:
         # Собираем метрики здоровья
         results = await health_registry.run_all()
-        
+
         metrics = {
             "timestamp": datetime.now().isoformat(),
             "checks": {},
             "summary": health_registry.get_summary(results)
         }
-        
+
         for name, result in results.items():
             metrics["checks"][name] = {
                 "status": result.status.value,
                 "response_time": result.response_time,
                 "critical": result.critical
             }
-        
+
         # Добавляем метрики из collector'а если он доступен
         if metrics_collector.enabled:
             metrics["prometheus_metrics"] = metrics_collector.get_metrics()
-        
+
         return metrics
     except Exception as e:
         logger.error(f"Error getting health metrics: {e}")
@@ -273,16 +273,16 @@ async def get_health_metrics(current_user = Depends(get_current_user)):
 async def get_active_alerts(current_user = Depends(get_current_user)):
     """
     Получение информации об активных алертах
-    
+
     Args:
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         ActiveAlertsResponse: Информация об активных алертах
     """
     try:
         active_alerts = alert_manager.get_active_alerts()
-        
+
         alerts_data = []
         for alert in active_alerts:
             alerts_data.append({
@@ -295,7 +295,7 @@ async def get_active_alerts(current_user = Depends(get_current_user)):
                 "start_time": alert.start_time.isoformat(),
                 "labels": alert.labels
             })
-        
+
         return ActiveAlertsResponse(
             alerts_count=len(active_alerts),
             alerts=alerts_data,
@@ -310,20 +310,20 @@ async def get_active_alerts(current_user = Depends(get_current_user)):
 async def run_specific_check(check_name: str, current_user = Depends(get_current_user)):
     """
     Запуск конкретной проверки здоровья
-    
+
     Args:
         check_name: Название проверки
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         HealthCheckResponse: Результат проверки
     """
     try:
         result = await health_registry.run_check(check_name)
-        
+
         if result is None:
             raise HTTPException(status_code=404, detail=f"Health check '{check_name}' not found")
-        
+
         return HealthCheckResponse(
             name=result.name,
             status=result.status.value,
@@ -341,20 +341,20 @@ async def run_specific_check(check_name: str, current_user = Depends(get_current
 async def run_group_checks(group_name: str, current_user = Depends(get_current_user)):
     """
     Запуск проверок для конкретной группы
-    
+
     Args:
         group_name: Название группы
         current_user: Аутентифицированный пользователь
-    
+
     Returns:
         Dict[str, HealthCheckResponse]: Результаты проверок группы
     """
     try:
         results = await health_registry.run_group(group_name)
-        
+
         if not results:
             raise HTTPException(status_code=404, detail=f"Health check group '{group_name}' not found or empty")
-        
+
         detailed_results = {}
         for name, result in results.items():
             detailed_results[name] = HealthCheckResponse(
@@ -365,7 +365,7 @@ async def run_group_checks(group_name: str, current_user = Depends(get_current_u
                 details=result.details,
                 timestamp=result.timestamp.isoformat()
             )
-        
+
         return detailed_results
     except Exception as e:
         logger.error(f"Error running group checks {group_name}: {e}")
@@ -391,18 +391,18 @@ async def readiness_probe():
         # Проверяем базовое состояние системы
         cpu_percent = psutil.cpu_percent(interval=0.1)
         memory_percent = psutil.virtual_memory().percent
-        
+
         # Система считается готовой если CPU и память в норме
         if cpu_percent < 95 and memory_percent < 95:
             return {
-                "status": "ready", 
+                "status": "ready",
                 "timestamp": datetime.now().isoformat(),
                 "cpu_percent": cpu_percent,
                 "memory_percent": memory_percent
             }
         else:
             raise HTTPException(
-                status_code=503, 
+                status_code=503,
                 detail=f"System not ready - CPU: {cpu_percent}%, Memory: {memory_percent}%"
             )
     except Exception as e:
@@ -414,7 +414,7 @@ async def readiness_probe():
 def register_health_endpoints(app):
     """
     Регистрация эндпоинтов health checks в основном приложении
-    
+
     Args:
         app: FastAPI приложение
     """
@@ -426,7 +426,7 @@ def register_health_endpoints(app):
 def initialize_health_checks(agent_core: 'AgentCore' = None):
     """
     Инициализация базовых проверок здоровья
-    
+
     Args:
         agent_core: Экземпляр ядра агента (опционально)
     """
@@ -437,27 +437,27 @@ def initialize_health_checks(agent_core: 'AgentCore' = None):
         disk_threshold=90.0
     )
     health_registry.register_checker(system_checker, "infrastructure")
-    
+
     # Если доступно ядро агента, добавляем проверку агента
     if agent_core:
         agent_checker = create_agent_health_checker(agent_core)
         health_registry.register_checker(agent_checker, "ai-agent")
-    
+
     logger.info("Basic health checks initialized")
 
 
 if __name__ == "__main__":
     # Пример использования
     import asyncio
-    
+
     async def test_health_endpoints():
         print("Testing health endpoints...")
-        
+
         # Запускаем проверки
         results = await health_registry.run_all()
         summary = health_registry.get_summary(results)
-        
+
         print(f"Overall status: {summary['overall_status']}")
         print(f"Healthy: {summary['healthy']}, Degraded: {summary['degraded']}, Unhealthy: {summary['unhealthy']}")
-    
+
     # asyncio.run(test_health_endpoints())
