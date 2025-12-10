@@ -103,7 +103,7 @@ class ApiClient {
   /**
    * Метод для получения статуса здоровья системы
    */
-  async getHealthStatus<T = import('@/shared/types/api').HealthStatus>(): Promise<T> {
+  async getHealthStatus<T = import('./types/api').HealthStatus>(): Promise<T> {
     // Используем правильный путь к эндпоинту в зависимости от окружения
     const endpoint = this.config.baseUrl.includes('/api') ? '/health' : '/api/health';
     return this.get<T>(endpoint);

@@ -5,7 +5,7 @@ import ReasoningTraceViewer from '@/widgets/ReasoningTraceViewer/ReasoningTraceV
 import { useLearningMetrics } from '@/widgets/LearningMetricsDashboard/hooks/useLearningMetrics';
 
 const LearningAnalyticsPage: React.FC = () => {
-  const { loading, error, refresh } = useLearningMetrics();
+  const { loading, error, refresh, data } = useLearningMetrics();
 
   if (loading) {
     return (
@@ -40,7 +40,7 @@ const LearningAnalyticsPage: React.FC = () => {
   return (
     <PageWrapper title="Аналитика обучения">
       <div className="space-y-8">
-        <LearningMetricsDashboard />
+        <LearningMetricsDashboard metrics={data} />
         <ReasoningTraceViewer className="mt-8" />
       </div>
     </PageWrapper>

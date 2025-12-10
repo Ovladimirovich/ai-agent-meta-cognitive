@@ -26,7 +26,7 @@ jest.mock('../../app/providers/ThemeProvider', () => ({
 
 // Мок для react-query
 jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(({ queryFn, initialData }) => ({
+  useQuery: jest.fn(({ initialData }) => ({
     data: initialData || { version: 'v1.0' },
     isLoading: false,
     refetch: jest.fn(),

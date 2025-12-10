@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, Suspense, lazy, useMemo } from 'react';
-import { GraphNode, GraphLink, BaseNode, BaseLink } from '../types';
+import { BaseNode, BaseLink } from '../types';
 import { getNodeColor, getNodeSize } from '../utils/graphUtils';
 
 
