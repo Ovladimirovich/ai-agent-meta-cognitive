@@ -32,7 +32,7 @@ export default defineConfig({
       }
     }
   },
-  base: '/ai-agent-meta-cognitive/', // Базовый путь для GitHub Pages
+  base: './', // Используем относительные пути для корректной работы на GitHub Pages
   server: {
     port: 3000,
     open: true,
