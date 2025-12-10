@@ -45,10 +45,10 @@ describe('ApiClient Environment Configuration', () => {
 
     // Тестируем функцию getBaseUrl напрямую
     const getBaseUrl = () => {
-      if ((global as any).import.meta.env.PROD) {
+      if (import.meta.env.PROD) {
         return '/api';
       }
-      return (global as any).import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     };
 
     const baseUrl = getBaseUrl();
@@ -73,10 +73,10 @@ describe('ApiClient Environment Configuration', () => {
 
     // Создаем временную функцию для тестирования
     const getBaseUrl = () => {
-      if ((global as any).import.meta.env.PROD) {
+      if (import.meta.env.PROD) {
         return '/api';
       }
-      return (global as any).import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     };
 
     const baseUrl = getBaseUrl();
@@ -101,10 +101,10 @@ describe('ApiClient Environment Configuration', () => {
 
     // Создаем временную функцию для тестирования
     const getBaseUrl = () => {
-      if ((global as any).import.meta.env.PROD) {
+      if (import.meta.env.PROD) {
         return '/api';
       }
-      return (global as any).import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
     };
 
     const baseUrl = getBaseUrl();
