@@ -33,7 +33,7 @@ class AgentCore:
         # Инициализация компонентов
         self.state_manager = StateManager()
         self.tool_orchestrator = ToolOrchestrator(config.agent_tool_timeout)
-        self.memory_manager = MemoryManager(config.max_memory_entries) if config.enable_memory else None
+        self.memory_manager = MemoryManager(config.agent_max_memory_entries) if config.enable_memory else None
         self.query_analyzer = QueryAnalyzer()
         self.confidence_calculator = ConfidenceCalculator()
         self.reasoning_tracer = ReasoningTracer() if config.enable_reasoning_trace else None
